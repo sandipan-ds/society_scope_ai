@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Society Scope AI — Demo Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      max-width: 480px;
+      width: 100%;
+      padding: 32px;
+    }
+    h1 { margin: 0 0 4px; font-size: 22px; color: #1a202c; }
+    .subtitle { color: #718096; font-size: 13px; margin-bottom: 24px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      background: #fef3c7;
+      color: #92400e;
+    }
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 14px;
+      font-family: inherit;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102,126,234,.15);
+    }
+    button {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: #667eea;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    button:hover { background: #5568d3; }
+    button.secondary { background: #e5e7eb; color: #1f2937; margin-top: 8px; }
+    button.secondary:hover { background: #d1d5db; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 12px;
+      padding: 10px;
+      background: #f9fafb;
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+    .error {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .error.show { display: block; }
+    .success {
+      margin-top: 12px;
+      padding: 12px;
+      background: #d1fae5;
+      color: #065f46;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .success.show { display: block; }
+    .profile {
+      margin-top: 16px;
+      padding: 14px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+    .profile.show { display: block; }
+    .divider {
+      margin: 20px 0;
+      border: 0;
+      border-top: 1px solid #e5e7eb;
+    }
+    .quick-users {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .quick-user-btn {
+      padding: 6px 8px;
+      font-size: 11px;
+      background: #f3f4f6;
+      color: #1f2937;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      width: auto;
+    }
+    .quick-user-btn:hover { background: #e5e7eb; }
+    .quick-user-btn.admin { background: #fef3c7; border-color: #fcd34d; }
+    .token-preview {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+      word-break: break-all;
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">DEV ONLY — demo UI</span>
+    <h1>Society Scope AI</h1>
+    <p class="subtitle">Secure hybrid assistant · Sign in to your account</p>
+
+    <form id="login-form">
+      <label for="email">Email</label>
+      <select id="email">
+        <optgroup label="Admin">
+          <option value="admin1@society.in">admin1@society.in</option>
+          <option value="admin2@society.in">admin2@society.in</option>
+        </optgroup>
+        <optgroup label="Residents">
+          <option value="resident1@society.in">resident1@society.in (A-101)</option>
+          <option value="resident2@society.in">resident2@society.in (A-202)</option>
+          <option value="resident3@society.in">resident3@society.in (A-304)</option>
+          <option value="resident4@society.in">resident4@society.in (A-405)</option>
+          <option value="resident5@society.in">resident5@society.in (B-101)</option>
+          <option value="resident6@society.in">resident6@society.in (B-203)</option>
+          <option value="resident7@society.in">resident7@society.in (B-306)</option>
+          <option value="resident8@society.in">resident8@society.in (B-404)</option>
+          <option value="resident9@society.in">resident9@society.in (A-505)</option>
+          <option value="resident10@society.in">resident10@society.in (B-606)</option>
+        </optgroup>
+      </select>
+
+      <label for="password">Password</label>
+      <input id="password" type="password" value="replace-on-first-login" />
+
+      <button type="submit" id="login-btn">Sign in</button>
+    </form>
+
+    <div class="error" id="error"></div>
+    <div class="success" id="success"></div>
+    <div class="profile" id="profile"></div>
+
+    <div class="hint">
+      <strong>Demo password:</strong> <code>replace-on-first-login</code><br/>
+      Works only when <code>ALLOW_DEV_PASSWORD_PLACEHOLDERS=true</code> in
+      <code>backend/.env</code>. Backend must be running on
+      <code>http://localhost:8000</code>.
+    </div>
+
+    <hr class="divider" />
+
+    <label>Quick actions</label>
+    <div class="quick-users">
+      <button class="quick-user-btn" id="btn-me" disabled>GET /auth/me</button>
+      <button class="quick-user-btn" id="btn-logout" disabled>Sign out</button>
+    </div>
+
+    <div class="token-preview" id="token-preview"></div>
+  </div>
+
+  <script>
+    const API = "http://localhost:8000";
+    let token = null;
+
+    const $ = id => document.getElementById(id);
+    const errorBox = $("error");
+    const successBox = $("success");
+    const profileBox = $("profile");
+    const tokenPreview = $("token-preview");
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.add("show");
+      successBox.classList.remove("show");
+    }
+    function showSuccess(msg) {
+      successBox.textContent = msg;
+      successBox.classList.add("show");
+      errorBox.classList.remove("show");
+    }
+    function clearMessages() {
+      errorBox.classList.remove("show");
+      successBox.classList.remove("show");
+    }
+
+    $("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessages();
+      const email = $("email").value;
+      const password = $("password").value;
+      $("login-btn").disabled = true;
+
+      try {
+        const resp = await fetch(`${API}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || `HTTP ${resp.status}`);
+        }
+        token = data.access_token;
+        showSuccess(`Signed in as ${email} — role: ${data.roles.join(", ")}`);
+        $("btn-me").disabled = false;
+        $("btn-logout").disabled = false;
+        tokenPreview.textContent = `token: ${token.slice(0, 40)}...`;
+      } catch (err) {
+        showError(`Login failed: ${err.message}`);
+        token = null;
+        $("btn-me").disabled = true;
+        $("btn-logout").disabled = true;
+        tokenPreview.textContent = "";
+      } finally {
+        $("login-btn").disabled = false;
+      }
+    });
+
+    $("btn-me").addEventListener("click", async () => {
+      if (!token) return;
+      clearMessages();
+      try {
+        const resp = await fetch(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || `HTTP ${resp.status}`);
+        }
+        profileBox.textContent = JSON.stringify(data, null, 2);
+        profileBox.classList.add("show");
+        showSuccess("Profile fetched");
+      } catch (err) {
+        showError(`Failed to fetch /auth/me: ${err.message}`);
+        profileBox.classList.remove("show");
+      }
+    });
+
+    $("btn-logout").addEventListener("click", () => {
+      token = null;
+      profileBox.classList.remove("show");
+      successBox.classList.remove("show");
+      errorBox.classList.remove("show");
+      tokenPreview.textContent = "";
+      $("btn-me").disabled = true;
+      $("btn-logout").disabled = true;
+      showSuccess("Signed out (token discarded client-side)");
+    });
+  </script>
+</body>
+</html>
