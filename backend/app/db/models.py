@@ -152,3 +152,26 @@ class AuditLog(Base):
     action = mapped_column(String(50), nullable=False)
     details = mapped_column(Text, nullable=True)
     created_at = mapped_column(DateTime, nullable=False, server_default=func.now(), index=True)
+
+
+class IngestionJob(Base):
+    __tablename__ = "ingestion_jobs"
+
+    id = mapped_column(Integer, primary_key=True, autoincrement=True)
+    document_id = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    status = mapped_column(String(20), nullable=False)
+    error_message = mapped_column(Text, nullable=True)
+    started_at = mapped_column(DateTime, nullable=True)
+    finished_at = mapped_column(DateTime, nullable=True)
+    created_at = mapped_column(DateTime, nullable=False, server_default=func.now())
+
+    document = relationship("Document")
+
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending','processing','completed','failed')",
+            name="ck_ingestion_status",
+        ),
+    )

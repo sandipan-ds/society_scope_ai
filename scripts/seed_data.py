@@ -80,18 +80,18 @@ FINE_TYPES = [
 ]
 
 DOCUMENTS = [
-    ("Society Handbook 2026", "policy", "society_handbook_2026.pdf", date(2026, 1, 5)),
-    ("Visitor Policy", "policy", "visitor_policy.pdf", date(2026, 1, 10)),
-    ("Parking Policy", "policy", "parking_policy.pdf", date(2026, 1, 12)),
-    ("Pet Policy", "policy", "pet_policy.pdf", date(2026, 2, 1)),
-    ("Waste Segregation Policy", "policy", "waste_segregation_policy.pdf", date(2026, 3, 15)),
-    ("Water Outage Notice", "notice", "water_outage_notice.pdf", date(2026, 5, 10)),
-    ("Lift Maintenance Notice", "notice", "lift_maintenance_notice.pdf", date(2026, 6, 4)),
-    ("Festival Event Circular", "circular", "festival_event_circular.pdf", date(2026, 7, 20)),
-    ("Vendor Contact Notice", "notice", "vendor_contact_notice.pdf", date(2026, 7, 28)),
-    ("Maintenance Due Reminder - July", "notice", "maintenance_due_reminder_july.pdf", date(2026, 7, 30)),
-    ("AGM Minutes - January 2026", "agm_minutes", "agm_minutes_jan_2026.pdf", date(2026, 1, 28)),
-    ("AGM Minutes - April 2026", "agm_minutes", "agm_minutes_apr_2026.pdf", date(2026, 4, 30)),
+    ("Society Handbook 2026", "policy", "society_handbook_2026.md", date(2026, 1, 5)),
+    ("Visitor Policy", "policy", "visitor_policy.md", date(2026, 1, 10)),
+    ("Parking Policy", "policy", "parking_policy.md", date(2026, 1, 12)),
+    ("Pet Policy", "policy", "pet_policy.md", date(2026, 2, 1)),
+    ("Waste Segregation Policy", "policy", "waste_segregation_policy.md", date(2026, 3, 15)),
+    ("Water Outage Notice", "notice", "water_outage_notice.md", date(2026, 5, 10)),
+    ("Lift Maintenance Notice", "notice", "lift_maintenance_notice.md", date(2026, 6, 4)),
+    ("Festival Event Circular", "circular", "festival_event_circular.md", date(2026, 7, 20)),
+    ("Vendor Contact Notice", "notice", "vendor_contact_notice.md", date(2026, 7, 28)),
+    ("Maintenance Due Reminder - July", "notice", "maintenance_due_reminder_july.md", date(2026, 7, 30)),
+    ("AGM Minutes - January 2026", "agm_minutes", "agm_minutes_jan_2026.md", date(2026, 1, 28)),
+    ("AGM Minutes - April 2026", "agm_minutes", "agm_minutes_apr_2026.md", date(2026, 4, 30)),
 ]
 
 ADMIN_USERS = [

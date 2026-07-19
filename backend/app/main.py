@@ -12,6 +12,8 @@ from app.config.settings import get_settings
 from app.db.session import get_db
 from app.auth.routes import router as auth_router
 from app.api.me_routes import router as me_router
+from app.api.admin_routes import router as admin_router
+from app.api.chat_routes import router as chat_router
 
 settings = get_settings()
 
@@ -87,3 +89,5 @@ def health_db(db=Depends(get_db)):
 # Routers
 app.include_router(auth_router)
 app.include_router(me_router)
+app.include_router(admin_router)
+app.include_router(chat_router)

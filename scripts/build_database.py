@@ -22,6 +22,7 @@ EXPECTED_TABLES = {
     "fines",
     "documents",
     "audit_logs",
+    "ingestion_jobs",
 }
 
 

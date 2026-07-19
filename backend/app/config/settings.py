@@ -23,6 +23,28 @@ class Settings(BaseSettings):
 
     allow_dev_password_placeholders: bool = Field(default=True)
 
+    upload_dir: str = Field(default="data/uploads")
+    chroma_dir: str = Field(default="data/chroma")
+    sample_docs_dir: str = Field(default="data/sample_docs")
+
+    def _resolve(self, raw: str) -> Path:
+        path = Path(raw)
+        if not path.is_absolute():
+            path = Path(__file__).resolve().parents[3] / path
+        return path
+
+    @property
+    def upload_path(self) -> Path:
+        return self._resolve(self.upload_dir)
+
+    @property
+    def chroma_path(self) -> Path:
+        return self._resolve(self.chroma_dir)
+
+    @property
+    def sample_docs_path(self) -> Path:
+        return self._resolve(self.sample_docs_dir)
+
     @property
     def database_path(self) -> Path:
         """Resolve the SQLite file path, anchored at the repo root regardless of CWD."""
