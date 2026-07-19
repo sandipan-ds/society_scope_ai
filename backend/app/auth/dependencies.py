@@ -43,6 +43,25 @@ def get_current_user(creds: Credentials, db: DbSession) -> User:
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+def get_optional_user(creds: Credentials, db: DbSession) -> User | None:
+    """Like get_current_user but returns None instead of 401 when the token
+    is missing or invalid. Used by /chat/query where public questions are
+    allowed anonymously."""
+    if creds is None:
+        return None
+    try:
+        email, _roles = get_subject_and_roles(creds.credentials)
+    except InvalidTokenError:
+        return None
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 def require_role(*allowed_roles: str) -> Callable[[CurrentUser], User]:
     """Build a FastAPI dependency that enforces one of `allowed_roles`."""
 

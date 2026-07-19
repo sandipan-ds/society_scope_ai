@@ -2,6 +2,8 @@
 
 A practical, step-by-step guide to logging in and using the demo MVP.
 
+> **Admin (committee) user?** See **[ADMIN.md](ADMIN.md)** for the full admin walkthrough — document upload, ingestion jobs, and audit logs.
+
 ---
 
 ## What this system does
@@ -220,6 +222,39 @@ Example — `/me/dues` as `resident1@society.in` returns:
 
 > Log in as `resident8@society.in` to demo the "all paid, nothing due" case (empty dues list, `total_due: 0`).
 
+### Admin endpoints
+
+Log in as `admin1@society.in` and use the token for these:
+
+```powershell
+$headers = @{ Authorization = "Bearer $token" }
+
+# List all society documents
+Invoke-RestMethod -Uri "http://localhost:8000/admin/documents" -Headers $headers
+
+# Upload a new document (multipart form)
+$form = @{
+  file          = Get-Item ".\notice.txt"
+  title         = "Water Supply Notice"
+  document_type = "notice"          # notice | policy | agm_minutes | circular
+  issue_date    = "2026-07-19"
+}
+Invoke-RestMethod -Uri "http://localhost:8000/admin/documents/upload" `
+  -Method Post -Headers $headers -Form $form
+
+# Ingestion job status (every upload creates a pending job)
+Invoke-RestMethod -Uri "http://localhost:8000/admin/ingestion-jobs" -Headers $headers
+
+# Audit trail (logins, private queries, uploads, deletions)
+Invoke-RestMethod -Uri "http://localhost:8000/admin/audit-logs" -Headers $headers
+```
+
+Rules:
+
+- All `/admin/*` endpoints require the **admin** role — residents get `403`, anonymous gets `401`.
+- Accepted file types: `.pdf`, `.txt`, `.md`.
+- Every upload stores the file in `data/uploads/` and creates a `pending` ingestion job automatically.
+
 ### What fails (by design)
 
 ```powershell
@@ -273,8 +308,8 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 
 ## Next steps (not built yet)
 
-- ~~`/me/profile`, `/me/dues`, `/me/fines`~~ ✅ built — see "Resident self-service endpoints" above
-- `/admin/documents/upload` — admin document upload
-- `/chat/query` — natural-language Q&A with citations
-- Document ingestion + vector retrieval
+- ~~`/me/profile`, `/me/dues`, `/me/fines`~~ ✅ built
+- ~~`/admin/documents/upload`~~ ✅ built
+- ~~Ingestion pipeline~~ ✅ built — docs are chunked + embedded into a local Chroma store
+- `/chat/query` — natural-language Q&A with citations (next)
 - React frontend (the demo HTML page is a placeholder)
