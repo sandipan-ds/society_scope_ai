@@ -10,7 +10,11 @@ DEFAULT_TOP_K = 5
 
 # Cosine distance threshold: results farther than this are treated as
 # "weak retrieval" and trigger the safe-fallback path instead of an answer.
-MAX_DISTANCE = 0.65
+# Tuned on the sample corpus with section-aware chunking (2026-07): on-topic
+# queries land at ~0.33-0.72, off-topic at ~0.73+. The margin is thin by
+# nature of a small corpus; data/eval_queries guards it — re-measure if the
+# embedding model, chunking, or corpus changes significantly.
+MAX_DISTANCE = 0.73
 
 
 @dataclass

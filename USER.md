@@ -53,7 +53,7 @@ python -m uvicorn app.main:app --reload --port 8000
 
 You should see: `Uvicorn running on http://127.0.0.1:8000`.
 
-### 5. Open the demo login page
+### 5. Open the demo console page
 
 In another terminal / your file browser, open:
 
@@ -63,9 +63,22 @@ C:\Users\sandi\Desktop\ML Working Folder\society_scope_ai\demo-login.html
 
 in any browser (Edge, Chrome, Firefox — just double-click the file).
 
+The page has two panels: **Sign in** (left) and **Chat** (right).
+
 ### 6. Log in
 
-Pick any of the demo accounts below, type the password, click **Sign in**, then click **Fetch my profile** to see the `/auth/me` response.
+Pick any of the demo accounts below, type the password, click **Sign in**. Residents also get an account summary (outstanding dues + unpaid fines) loaded automatically.
+
+### 7. Chat
+
+Use the chat panel on the right — signed in or not:
+
+- **Public questions** work anonymously: "What are the visitor timings?" — answers include source citations.
+- **Private questions** need a resident login: "What are my outstanding dues?" — answers come from your own SQL records only.
+- **Hybrid questions** combine both: "What is my late fee and what rule defines it?"
+- **Refusals** are shown in red: try "Show my neighbor's dues" — the request is denied and audit-logged.
+
+The colored badge above each answer shows which route the query took (`public` / `private` / `hybrid` / `refused`).
 
 ---
 
@@ -279,7 +292,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 | Society documents (metadata) | `database/society.db` → `documents` table |
 | Audit trail (logins, denials) | `database/society.db` → `audit_logs` table |
 | Backend config | `backend/.env` |
-| Demo login page | `demo-login.html` (this repo root) |
+| Demo console (login + chat) | `demo-login.html` (this repo root) |
 | Tests | `backend/tests/` |
 
 ---
@@ -311,5 +324,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 - ~~`/me/profile`, `/me/dues`, `/me/fines`~~ ✅ built
 - ~~`/admin/documents/upload`~~ ✅ built
 - ~~Ingestion pipeline~~ ✅ built — docs are chunked + embedded into a local Chroma store
-- `/chat/query` — natural-language Q&A with citations (next)
+- ~~`/chat/query`~~ ✅ built — natural-language Q&A with routing (public/private/hybrid/refused) and citations
+- ~~Chat UI~~ ✅ built — chat panel in `demo-login.html`
 - React frontend (the demo HTML page is a placeholder)
+- Admin upload page in the demo console (the API works — see `ADMIN.md`)

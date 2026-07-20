@@ -18,10 +18,46 @@ def chunk_text(
     chunk_tokens: int = DEFAULT_CHUNK_TOKENS,
     overlap_tokens: int = DEFAULT_OVERLAP_TOKENS,
 ) -> list[str]:
-    """Split text into chunks, preferring paragraph then sentence boundaries."""
+    """Split text into chunks, preferring section then paragraph boundaries.
+
+    Markdown sections (heading-delimited) are never merged: a chunk stays
+    within one section so its embedding stays topically focused. Plain text
+    without headings is one section and chunks exactly as before.
+    """
     if not text.strip():
         return []
 
+    chunks: list[str] = []
+    for section in _split_sections(text):
+        chunks.extend(_pack_section(section, chunk_tokens, overlap_tokens))
+    return chunks
+
+
+def _split_sections(text: str) -> list[str]:
+    """Split markdown into heading-delimited sections (heading stays attached
+    to its body). Text before the first heading is its own section."""
+    import re
+
+    sections: list[str] = []
+    current: list[str] = []
+    for line in text.split("\n"):
+        if re.match(r"^#{1,6}\s", line) and any(l.strip() for l in current):
+            sections.append("\n".join(current).strip())
+            current = [line]
+        else:
+            current.append(line)
+    if any(l.strip() for l in current):
+        sections.append("\n".join(current).strip())
+    return sections
+
+
+def _pack_section(
+    text: str,
+    chunk_tokens: int,
+    overlap_tokens: int,
+) -> list[str]:
+    """Pack one section into chunks, preferring paragraph then sentence
+    boundaries."""
     max_chars = chunk_tokens * CHARS_PER_TOKEN
     overlap_chars = overlap_tokens * CHARS_PER_TOKEN
 

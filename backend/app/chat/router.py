@@ -47,26 +47,26 @@ _OTHER_RESIDENT_PATTERNS = [
     r"\btheir\s+(dues|payments?|fines?)\b",
 ]
 
-# Private account intent (about oneself).
+# Private account intent (about oneself). Up to two words may sit between
+# "my" and the account keyword ("my late fee", "my unpaid dues").
 _PRIVATE_PATTERNS = [
-    r"\bmy\s+(dues?|charges?|payments?|fines?|flat|profile|phone|email|account)\b",
-    r"\bmy\s+outstanding\b",
-    r"\bmy\s+pending\b",
+    r"\bmy\s+(\w+\s+){0,2}(dues?|charges?|payments?|fines?|fees?|flat|profile|phone|email|account|balance)\b",
+    r"\bmy\s+(outstanding|pending)\b",
     r"\bdo\s+i\s+owe\b",
+    r"\bdo\s+i\s+have\s+(any\s+)?(\w+\s+){0,2}(fines?|dues?|charges?|payments?)\b",
     r"\bhave\s+i\s+(paid|been\s+fined)\b",
     r"\bwas\s+i\s+fined\b",
-    r"\bi\s+paid\b",
-    r"\bowe\b",
+    r"\bi\s+(paid|owe)\b",
 ]
 
-# Document/policy intent (society rules, notices, facilities).
-_PUBLIC_PATTERNS = [
-    r"\bvisitor", r"\bparking\b", r"\bpet", r"\bpolicy\b", r"\brules?\b",
-    r"\bnotice\b", r"\bcircular\b", r"\bagm\b", r"\bminutes\b",
-    r"\bwater\b", r"\blift\b", r"\belevator\b", r"\bgym\b",
-    r"\bwaste\b", r"\bgarbage\b", r"\bsegregat",
-    r"\bfestival\b", r"\bevent\b", r"\bvendor", r"\bplumber\b",
-    r"\bhandbook\b", r"\btimings?\b", r"\bhall\b",
+# Document/policy-seeking signals. Only these make a private query "hybrid".
+# Topical words (parking, water, lift...) are deliberately NOT here: a private
+# question containing them ("Was I fined for wrong parking?") is still private.
+# Queries with no private signal default to the public route anyway.
+_STRONG_PUBLIC_PATTERNS = [
+    r"\bpolic", r"\brules?\b", r"\bnotices?\b", r"\bcirculars?\b",
+    r"\bagm\b", r"\bminutes\b", r"\bhandbook\b", r"\btimings?\b",
+    r"\ballowed\b", r"\baccording\s+to\b",
 ]
 
 _FLAT_NUMBER_RE = re.compile(r"\b([ab])-?(\d{3})\b", re.IGNORECASE)
@@ -100,10 +100,8 @@ def classify(query: str, user_flat_no: str | None = None) -> RouteDecision:
 
 def _by_intent(q: str) -> RouteDecision:
     has_private = _matches_any(_PRIVATE_PATTERNS, q)
-    has_public = _matches_any(_PUBLIC_PATTERNS, q)
-
-    if has_private and has_public:
+    if not has_private:
+        return RouteDecision(Route.PUBLIC, "general society question")
+    if _matches_any(_STRONG_PUBLIC_PATTERNS, q):
         return RouteDecision(Route.HYBRID, "mixes account data with policy context")
-    if has_private:
-        return RouteDecision(Route.PRIVATE, "asks about own account data")
-    return RouteDecision(Route.PUBLIC, "general society question")
+    return RouteDecision(Route.PRIVATE, "asks about own account data")

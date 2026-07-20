@@ -2,230 +2,246 @@
 
 ## Purpose
 
-This document tells coding agents and collaborators how to work on the **Housing Society AI Assistant** project safely and in the correct order.
+This repository builds a **secure Housing Society AI Assistant** that answers:
 
-This project is a **secure hybrid RAG assistant** for a housing society. It answers:
+- **Public questions** from society and housing documents using RAG
+- **Private resident-specific questions** from SQL data
+- **Hybrid questions** by combining authorized SQL data with relevant public document retrieval
 
-- **public questions** from notices, policies, AGM minutes, and society documents
-- **private questions** from resident-specific SQL data such as monthly charges and fines
-
-The project must stay simple, practical, and secure.
-
----
-
-## Project goal
-
-Build a working MVP that can:
-
-- authenticate residents and admins
-- answer public document questions with citations
-- answer resident-specific private questions from SQL
-- refuse unauthorized requests for another resident's private data
-- support document ingestion for the RAG layer
+This file is the **root instruction file for coding agents**. Treat the repository documents as implementation contracts. Default to safe, grounded, testable changes that preserve privacy, role boundaries, and MVP simplicity.
 
 ---
 
-## Required reading order
+## Read This Before Coding
 
-Before coding anything, read these documents in this order:
+Before making any non-trivial change, review the repo documents in this order:
 
-1. `README.md`
-2. `INDEX.md`
-3. `PRD.md`
-4. `ARCHITECTURE.md`
-5. `DB_SCHEMA.md`
-6. `API_RBAC_SPEC.md`
-7. `RAG_INGESTION_SPEC.md`
-8. `PROMPT_GUARDRAILS.md`
-9. `SYNTHETIC_DATA_AND_TESTS.md`
-10. `BUILD_ORDER.md`
+1. `AGENTS.md`
+2. `00_INDEX.md`
+3. `coding-agent-workflow.md`
+4. `01_README.md`
+5. `02_PRD.md`
+6. `03_ARCHITECTURE.md`
+7. `04_DB_SCHEMA.md`
+8. `05_API_RBAC_SPEC.md`
+9. `06_RAG_INGESTION_SPEC.md`
+10. `09_BUILD_ORDER.md`
 
-Do not start implementation without understanding these files.
+For non-trivial implementation work, follow `coding-agent-workflow.md` as the detailed execution process for analysis, risk review, change planning, implementation, and verification.
 
----
+When relevant, also review:
 
-## Non-negotiable architecture rules
+- `07_PROMPT_GUARDRAILS.md`
+- `08_SYNTHETIC_DATA_AND_TESTS.md`
+- `10_CURRENT_PROGRESS.md`
+- `11_PERSONALIZATION.md`
+- `12_TROUBLESHOOTING.md`
 
-### Rule 1: Split public and private data correctly
-- **Public and society documents** go through RAG/vector retrieval
-- **Private resident data** stays in SQL
-
-### Rule 2: Never store resident-private account data in embeddings
-Resident data such as charges, fines, phone numbers, and emails must remain in SQL.
-
-### Rule 3: Access control must be enforced outside the LLM
-The LLM is not the main security boundary. Authentication, resident scoping, and role checks must be enforced in backend logic.
-
-### Rule 4: Keep the MVP simple
-This is a single-society MVP, not an enterprise ERP. Prefer small, testable modules and a simple schema.
-
-### Rule 5: Never guess private data
-If SQL does not return a record, say no record was found. Do not infer or hallucinate missing account information.
+If a request conflicts with the documented architecture, schema, RBAC rules, or build order, do not improvise. Surface the conflict explicitly.
 
 ---
 
-## Current simplified data model
+## Repo Core Rules
 
-The project currently uses a simplified schema built around:
+### 1. Public and private data must stay separated
 
-- `users`
-- `residents`
-- `monthly_charges`
-- `fines`
-- `documents`
-- optional `audit_logs`
+- Public and society document knowledge belongs in the RAG layer.
+- Private resident-specific data belongs in SQL.
+- Do **not** move private resident data into embeddings or the vector store.
 
-Do not re-introduce unnecessary complexity unless the requirements change.
+### 2. Access control must be enforced outside the LLM
 
----
+- Enforce JWT validation, route protection, and RBAC in backend code.
+- Enforce authorization again at query time where needed.
+- Do **not** rely on prompts alone to protect private data.
 
-## Coding priorities
+### 3. The system must support four clear answer types
 
-Implement in this order unless a document explicitly requires otherwise:
+- **Public**: document-backed
+- **Private**: SQL-backed and scoped to the caller
+- **Hybrid**: authorized SQL + public documents
+- **Refused/unsupported**: safe denial without leaking hidden data
 
-1. backend scaffold
-2. database connection and models
-3. auth and JWT
-4. RBAC / resident scoping
-5. resident-private SQL endpoints
-6. document upload metadata
-7. ingestion pipeline
-8. vector retrieval
-9. chat routing and orchestration
-10. logging and tests
-11. frontend polish
+### 4. MVP simplicity beats over-engineering
 
----
+- Build the simplest thing that satisfies the PRD and architecture.
+- Avoid speculative abstractions, premature optimization, or unnecessary infrastructure.
 
-## Build behavior expectations
+### 5. Grounded responses are required
 
-### When implementing backend logic
-- keep modules small and explicit
-- use deterministic application logic for auth and permission checks
-- keep service-layer functions easy to test
-- avoid mixing unrelated concerns in one file
-
-### When implementing AI/RAG logic
-- keep prompts grounded in retrieved chunks or SQL data
-- separate public, private, hybrid, and refusal flows clearly
-- support citations only for document-backed answers
-
-### When implementing UI
-- prioritize clarity over visual complexity
-- make login, chat, payment status, fine status, and admin upload easy to demo
-- show refusal and error states clearly
+- Public answers must be grounded in retrieved documents.
+- SQL-backed answers must come from scoped structured data.
+- Do not fabricate citations, sources, or private facts.
 
 ---
 
-## Security rules
+## How to Work
 
-These must always be respected:
+For any non-trivial task, follow this order:
 
-- a resident can view only their own private data
-- a resident cannot query another resident's dues or fines
-- admin routes must be protected
-- unauthorized access attempts should be logged
-- JWT must be validated on protected routes
-- private SQL rows must never be exposed through public retrieval
+1. **Understand the request**
+2. **Classify the flow** as public, private, hybrid, or refusal-sensitive
+3. **Inspect the affected path** end to end
+4. **Identify dependencies, boundaries, and risks**
+5. **Propose the smallest safe change**
+6. **Implement in the right layer**
+7. **Add or update tests**
+8. **Update progress/troubleshooting docs when applicable**
 
-Examples of requests that must be refused:
-
-- "Show my neighbor's dues"
-- "How much fine does flat A-304 have?"
-- "Give me payment details of another resident"
+Do not jump straight to code for changes involving auth, RBAC, SQL scoping, ingestion, retrieval, orchestration, refusal logic, or logging.
 
 ---
 
-## Testing rules
+## Required Pre-Change Analysis
 
-At minimum, add tests for:
+Before architecture-sensitive changes, produce a concise change impact report covering:
 
-- login success/failure
-- protected route access
-- resident can fetch own monthly charges
-- resident can fetch own fines
-- resident cannot fetch another resident's records
-- admin can upload documents
-- public RAG queries return cited answers
-- unauthorized private queries are refused
+- **Task**
+- **Classification**: public / private / hybrid / refusal-sensitive
+- **Entry points**: routes, handlers, services, jobs
+- **Execution flow**: request to response path
+- **Relevant modules/files**
+- **Dependencies**: auth, SQL, vector retrieval, prompts, logging, external services
+- **Security boundary**: where access control is enforced
+- **Critical areas**
+- **Breaking points**: API contracts, schema assumptions, RBAC behavior, metadata contracts
+- **Risk level**: low / medium / high
+- **Smallest safe implementation**
+- **Test plan**
+- **Open questions**
 
-Do not mark a module complete until relevant tests pass.
-
----
-
-## Progress tracking rule
-
-After completing a meaningful unit of work, update:
-
-- `10_CURRENT_PROGRESS.md` with status changes
-- `12_TROUBLESHOOTING.md` if a real issue was found and fixed
-
-This project should keep a visible history of progress and debugging decisions.
+Separate **observed facts** from **assumptions** whenever the codebase is ambiguous.
 
 ---
 
-## Personalization reference
+## Repo-Specific Critical Areas
 
-Agents working in this repository should also follow the communication guidance defined in `docs/11_PERSONALIZATION.md`.
+Treat these as high-risk unless proven otherwise:
 
-That document defines:
-- response behavior
-- tone and collaboration style
-- formatting and writing preferences
-- clarification rules
-- documentation and planning behavior
+- authentication and JWT validation
+- RBAC and role-based route protection
+- query-time authorization
+- SQL scoping to the authenticated resident
+- chat routing between public, private, hybrid, and refused flows
+- prompt assembly and context construction
+- ingestion, chunking, metadata, and retrieval quality
+- citation behavior and response grounding
+- logging and audit trails
+- schema changes affecting dues, fines, residents, users, or documents
 
-Use `AGENTS.md` as the root operating guide and `docs/11_PERSONALIZATION.md` as the detailed communication-style reference.
-
-If there is any ambiguity:
-- follow project scope and safety requirements first
-- keep outputs clear, structured, and practical
-- preserve consistency across docs, planning, and implementation support
-
-
-## What not to do
-
-- do not store monthly payment status as separate DB columns like `jan`, `feb`, `mar`
-- do not move private resident data into the vector store
-- do not rely only on prompt instructions for privacy protection
-- do not over-engineer the schema for a small single-society MVP
-- do not skip synthetic data seeding
-- do not skip refusal handling for unauthorized access
+Any change touching these areas needs careful analysis and tests.
 
 ---
 
-## Preferred implementation mindset
+## Implementation Rules
 
-When in doubt, optimize for:
-
-- correctness
-- security
-- clarity
-- simple local demoability
-- maintainability
-
-This project should feel like a **real secure product MVP**, not just a chatbot demo.
-
----
-
-## Definition of good contribution
-
-A good implementation change:
-
-- matches the existing docs
-- keeps the SQL/RAG split clean
-- improves security or clarity
-- is testable
-- does not introduce unnecessary complexity
+- Prefer the **smallest safe diff**.
+- Keep logic in the **correct layer**.
+- Preserve **public/private data separation**.
+- Keep backend logic **modular and testable**.
+- Preserve documented **API contracts** unless the change explicitly updates the contract and dependent code.
+- Keep the project **easy to run locally**.
+- Surface uncertainty instead of guessing.
+- Avoid unrelated refactors during scoped feature work.
 
 ---
 
-## Final instruction for coding agents
+## What Not To Do
 
-Treat the docs in this repo as implementation contracts.
+Do not:
 
-If a requirement is unclear:
-1. check `INDEX.md`
-2. check the relevant spec document
-3. prefer the simpler and safer implementation path
-4. do not invent new architecture without updating the docs
+- put resident-private data into embeddings or vector retrieval
+- use prompts as the main privacy mechanism
+- leak hidden information through refusal wording
+- fabricate citations or document grounding
+- over-engineer the MVP
+- redesign the simplified schema without clear need
+- store month-wise charges as separate month columns instead of row-based records
+- skip synthetic-data thinking and refusal-path handling
+- bypass logging for sensitive actions
+
+---
+
+## Build Order Discipline
+
+Default implementation sequence should remain aligned with the project build order:
+
+1. backend foundation
+2. auth and RBAC
+3. private SQL domain
+4. synthetic SQL data
+5. document metadata and ingestion jobs
+6. ingestion pipeline
+7. synthetic documents
+8. retrieval and query routing
+9. chat orchestration
+10. logging and audit behavior
+11. tests
+12. frontend
+13. polish
+14. deployment/demo preparation
+
+If a requested task depends on unfinished earlier steps, say so clearly and propose the right order.
+
+---
+
+## Testing Expectations
+
+Security and refusal behavior are product features. Test accordingly.
+
+At minimum, relevant changes should verify:
+
+- valid and invalid authentication flows
+- route protection and JWT validation
+- resident access to own data only
+- denial of access to another resident’s data
+- correct admin/staff behavior where applicable
+- public query grounding
+- private query scoping
+- hybrid query composition
+- safe refusal behavior
+- ingestion success/failure visibility
+- retrieval quality and metadata use
+- logging/audit behavior for sensitive actions
+
+---
+
+## Progress Tracking Rule
+
+After completing a meaningful work unit, update the relevant tracking docs when applicable:
+
+- `10_CURRENT_PROGRESS.md`
+- `12_TROUBLESHOOTING.md`
+
+Record completed work, current status, blockers, notable bugs, and lessons that future contributors should know.
+
+---
+
+## Definition of a Good Contribution
+
+A good contribution:
+
+- aligns with the PRD and architecture
+- keeps data boundaries clean
+- improves correctness, clarity, or security
+- preserves or strengthens access control
+- remains grounded and explainable
+- is easy to test and demo locally
+- avoids unnecessary complexity
+
+---
+
+## Default Decision Order
+
+When trade-offs appear, prioritize:
+
+1. correctness
+2. security
+3. clarity
+4. testability
+5. grounded behavior
+6. local demoability
+7. maintainability
+8. simplicity over cleverness
+
+If you are unsure, choose the safer and simpler path, and state the uncertainty explicitly.

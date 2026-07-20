@@ -8,7 +8,6 @@ orchestrator.
 """
 from __future__ import annotations
 
-from app.chat.private_context import private_summary
 from app.prompts import templates
 from app.retrieval.search import RetrievedChunk
 
@@ -18,14 +17,7 @@ def compose_public(question: str, chunks: list[RetrievedChunk]) -> str:
     if not chunks:
         return templates.MISSING_DOCUMENT_MESSAGE
 
-    primary = chunks[0]
-    answer_parts = [_extract_relevant_sentences(question, primary.text)]
-    if len(chunks) > 1 and chunks[1].distance < 0.45:
-        extra = _extract_relevant_sentences(question, chunks[1].text)
-        if extra and extra not in answer_parts[0]:
-            answer_parts.append(extra)
-
-    body = " ".join(p for p in answer_parts if p).strip()
+    body = _extract_relevant_sentences(question, chunks)
     if not body:
         return templates.MISSING_DOCUMENT_MESSAGE
 
@@ -48,17 +40,23 @@ def compose_hybrid(question: str, sql_summary: str, chunks: list[RetrievedChunk]
         sections.append(f"Your account: {templates.MISSING_RECORD_MESSAGE}")
 
     if chunks:
-        policy = _extract_relevant_sentences(question, chunks[0].text)
+        policy = _extract_relevant_sentences(question, chunks)
         if policy:
             sections.append(f"Society rule: {policy} (Source: {chunks[0].title})")
+        else:
+            sections.append(f"Society rule: {templates.MISSING_DOCUMENT_MESSAGE}")
     else:
         sections.append(f"Society rule: {templates.MISSING_DOCUMENT_MESSAGE}")
 
     return "\n\n".join(sections)
 
 
-def _extract_relevant_sentences(question: str, text: str, max_sentences: int = 3) -> str:
-    """Pick the sentences most relevant to the question by keyword overlap."""
+def _extract_relevant_sentences(
+    question: str, chunks: list[RetrievedChunk], max_sentences: int = 3
+) -> str:
+    """Pick the sentences most relevant to the question across ALL retrieved
+    chunks, by keyword overlap with prefix-stem matching ("lift" matches
+    "lifts", "book" matches "booked")."""
     import re
 
     stopwords = {
@@ -71,20 +69,37 @@ def _extract_relevant_sentences(question: str, text: str, max_sentences: int = 3
         w for w in re.findall(r"[a-z]+", question.lower()) if w not in stopwords and len(w) > 2
     }
 
-    sentences = re.split(r"(?<=[.!?])\s+", text.replace("\n", " "))
-    scored = []
-    for sent in sentences:
-        words = set(re.findall(r"[a-z]+", sent.lower()))
-        score = len(q_words & words)
-        if score:
-            scored.append((score, sent.strip()))
+    def score(sent_words: set[str]) -> int:
+        total = 0
+        for qw in q_words:
+            if qw in sent_words:
+                total += 1
+            elif len(qw) >= 4 and any(
+                len(w) >= 4 and (w.startswith(qw) or qw.startswith(w)) for w in sent_words
+            ):
+                total += 1
+        return total
+
+    def sentences_of(text: str) -> list[str]:
+        # Strip markdown heading markers so answers don't quote raw '#' symbols.
+        text = re.sub(r"(?m)^\s*#{1,6}\s*", "", text)
+        return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text.replace("\n", " ")) if s.strip()]
+
+    # Track (score, chunk position, sentence position, sentence); positions
+    # let us restore document order after picking the highest scorers.
+    scored: list[tuple[int, int, int, str]] = []
+    for chunk_pos, chunk in enumerate(chunks):
+        for sent_pos, sent in enumerate(sentences_of(chunk.text)):
+            words = set(re.findall(r"[a-z]+", sent.lower()))
+            s = score(words)
+            if s:
+                scored.append((s, chunk_pos, sent_pos, sent))
 
     if not scored:
-        # Fallback: first meaningful sentences of the chunk.
-        return " ".join(s.strip() for s in sentences[:max_sentences] if s.strip())
+        # Fallback: first meaningful sentences of the nearest chunk.
+        return " ".join(sentences_of(chunks[0].text)[:max_sentences])
 
     scored.sort(key=lambda x: -x[0])
-    picked = [s for _, s in scored[:max_sentences]]
-    # Preserve original document order for readability.
-    picked.sort(key=lambda s: text.find(s))
-    return " ".join(picked)
+    picked = scored[:max_sentences]
+    picked.sort(key=lambda x: (x[1], x[2]))  # document order
+    return " ".join(sent for _, _, _, sent in picked)
