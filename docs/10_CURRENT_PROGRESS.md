@@ -84,6 +84,7 @@ Status markers used here:
 | Optional audit logs table/model | ✅ | Table created empty (real events populate it later) |
 | Seed data script | ✅ | `scripts/seed_data.py` (deterministic, Indian names + realistic phones, 80/20 owner/tenant split) |
 | DB build script | ✅ | `scripts/build_database.py` applies schema and runs seed (idempotent; --reset to recreate) |
+| Excel data entry | ✅ | `scripts/export_excel.py` → `data/society_data.xlsx` (5 sheets incl. README rules) + `scripts/import_excel.py` (validated full replace, FK-safe, transactional, row-level errors); edit-cycle verified end-to-end |
 
 ### Demo credentials (placeholder hashes — replace when auth module is wired)
 
@@ -204,9 +205,10 @@ The project must refuse unauthorized access to another resident's private data.
 9. ✅ Build chat UI (extended `demo-login.html` — chat panel with route badges, citations, refusal states, suggestion chips, resident account summary)
 10. ✅ Add evaluation harness (`data/eval_queries/` + `scripts/run_eval.py` — 73/73 passing; drove real fixes: section-aware chunking, orphan-embedding deletion, test-store hermeticity, threshold tuning)
 11. ✅ Ingest real corpus (Maharashtra Co-operative Societies Act, 1960 — 358 chunks; eval expanded with Act-based cases)
-12. ⬜ Optional: plug an OpenAI-compatible LLM behind `app/chat/composer.py` (prompt templates already in `app/prompts/templates.py`)
-13. ⬜ Optional: admin upload page (API works; UI would extend `demo-login.html`)
-14. ⬜ Deployment prep + demo assets (screenshots, demo script)
+12. ✅ Add Excel-based data entry (`data/society_data.xlsx` + export/import scripts with validation; members never touch SQL)
+13. ⬜ Optional: plug an OpenAI-compatible LLM behind `app/chat/composer.py` (prompt templates already in `app/prompts/templates.py`)
+14. ⬜ Optional: admin upload page (API works; UI would extend `demo-login.html`)
+15. ⬜ Deployment prep + demo assets (screenshots, demo script)
 
 ---
 

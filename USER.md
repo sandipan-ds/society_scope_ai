@@ -291,9 +291,40 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 | Monthly charges / fines | `database/society.db` → `monthly_charges`, `fines` |
 | Society documents (metadata) | `database/society.db` → `documents` table |
 | Audit trail (logins, denials) | `database/society.db` → `audit_logs` table |
+| **Editable data workbook** | `data/society_data.xlsx` (see below) |
 | Backend config | `backend/.env` |
 | Demo console (login + chat) | `demo-login.html` (this repo root) |
 | Tests | `backend/tests/` |
+
+---
+
+## Editing data via Excel (no SQL needed)
+
+Society members maintain the data in a normal Excel workbook; the app keeps
+using the database internally. Two scripts bridge them:
+
+```powershell
+# 1. Export the database to Excel (one sheet per table)
+python scripts/export_excel.py        # -> data/society_data.xlsx
+
+# 2. Edit the workbook in Excel, save it, then load it back
+python scripts/import_excel.py
+```
+
+The workbook has 5 sheets: `README` (editing rules), `residents`, `users`,
+`monthly_charges`, `fines`. Key rules (full list in the README sheet):
+
+- Don't rename sheets/columns or change `id` values — rows link by id.
+- New rows: leave `id` blank; one is assigned automatically.
+- Months are `jan`..`dec`; statuses and types use the documented values.
+- Dates are `YYYY-MM-DD`; booleans are `TRUE`/`FALSE`.
+
+The import validates every row (type, required fields, allowed values) and
+reports the exact Excel row on any problem — **nothing is imported until the
+whole workbook is valid**, so a typo can never half-corrupt the data.
+Documents, ingestion jobs, and audit logs are app-managed and not in the
+workbook. Re-importing resets `created_at` timestamps on replaced rows —
+expected behavior for a full refresh.
 
 ---
 

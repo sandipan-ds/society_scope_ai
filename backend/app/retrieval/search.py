@@ -6,7 +6,11 @@ from typing import Any
 
 from app.retrieval.vector_store import _get_collection
 
-DEFAULT_TOP_K = 5
+# top_k=8 (not 5): with section-aware chunking, a document's content chunks
+# often rank just below its header chunks — a wider candidate pool lets the
+# composer reach them (e.g. "When is the next AGM?"). filter_relevant still
+# guards quality via MAX_DISTANCE.
+DEFAULT_TOP_K = 8
 
 # Cosine distance threshold: results farther than this are treated as
 # "weak retrieval" and trigger the safe-fallback path instead of an answer.
