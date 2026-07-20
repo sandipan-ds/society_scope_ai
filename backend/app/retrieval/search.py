@@ -6,11 +6,20 @@ from typing import Any
 
 from app.retrieval.vector_store import _get_collection
 
-DEFAULT_TOP_K = 5
+# top_k=8 (not 5): with section-aware chunking, a document's content chunks
+# often rank just below its header chunks — a wider candidate pool lets the
+# composer reach them (e.g. "When is the next AGM?"). filter_relevant still
+# guards quality via MAX_DISTANCE.
+DEFAULT_TOP_K = 8
 
 # Cosine distance threshold: results farther than this are treated as
 # "weak retrieval" and trigger the safe-fallback path instead of an answer.
-MAX_DISTANCE = 0.65
+# Measured on the full corpus (12 sample docs + Maharashtra Co-operative
+# Societies Act, 2026-07): eval queries with answers land at best-distance
+# <= 0.60, off-topic queries at >= 0.67 — 0.64 sits mid-gap. Re-measure
+# whenever the corpus, chunking, or embedding model changes (see
+# docs/12_TROUBLESHOOTING.md); data/eval_queries guards this boundary.
+MAX_DISTANCE = 0.64
 
 
 @dataclass

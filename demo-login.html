@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Society Scope AI — Demo Login</title>
+  <title>Society Scope AI — Demo Console</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -12,9 +12,11 @@
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      gap: 24px;
       padding: 24px;
+      flex-wrap: wrap;
     }
     .card {
       background: #fff;
@@ -23,6 +25,12 @@
       max-width: 480px;
       width: 100%;
       padding: 32px;
+    }
+    .chat-card {
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      min-height: 70vh;
     }
     h1 { margin: 0 0 4px; font-size: 22px; color: #1a202c; }
     .subtitle { color: #718096; font-size: 13px; margin-bottom: 24px; }
@@ -132,7 +140,6 @@
       width: auto;
     }
     .quick-user-btn:hover { background: #e5e7eb; }
-    .quick-user-btn.admin { background: #fef3c7; border-color: #fcd34d; }
     .token-preview {
       font-size: 11px;
       color: #6b7280;
@@ -140,6 +147,117 @@
       word-break: break-all;
       font-family: ui-monospace, monospace;
     }
+
+    /* ---- account summary ---- */
+    .summary {
+      margin-top: 16px;
+      display: none;
+    }
+    .summary.show { display: block; }
+    .summary h2 { font-size: 14px; margin: 0 0 8px; color: #1f2937; }
+    .summary .totals { display: flex; gap: 8px; margin-bottom: 8px; }
+    .summary .total-box {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .summary .total-box .amount { font-size: 18px; font-weight: 700; }
+    .summary .total-box .label { font-size: 11px; color: #6b7280; }
+    .total-box.due { background: #fef3c7; }
+    .total-box.due .amount { color: #92400e; }
+    .total-box.fine { background: #fee2e2; }
+    .total-box.fine .amount { color: #991b1b; }
+    .summary ul {
+      margin: 6px 0 0;
+      padding: 0 0 0 16px;
+      font-size: 12px;
+      color: #374151;
+      line-height: 1.6;
+    }
+
+    /* ---- chat ---- */
+    .chat-identity {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    .chat-identity strong { color: #1f2937; }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      background: #f9fafb;
+      min-height: 320px;
+      max-height: 50vh;
+      margin-bottom: 12px;
+    }
+    .msg { margin-bottom: 12px; display: flex; flex-direction: column; }
+    .msg.user { align-items: flex-end; }
+    .msg.assistant { align-items: flex-start; }
+    .bubble {
+      max-width: 85%;
+      padding: 10px 13px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .msg.user .bubble { background: #667eea; color: #fff; border-bottom-right-radius: 4px; }
+    .msg.assistant .bubble { background: #fff; border: 1px solid #e5e7eb; border-bottom-left-radius: 4px; color: #1f2937; }
+    .msg.assistant.refused .bubble { background: #fef2f2; border-color: #fecaca; color: #7f1d1d; }
+    .route-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 4px;
+    }
+    .route-badge.public { background: #dbeafe; color: #1e40af; }
+    .route-badge.private { background: #d1fae5; color: #065f46; }
+    .route-badge.hybrid { background: #ede9fe; color: #5b21b6; }
+    .route-badge.refused { background: #fee2e2; color: #991b1b; }
+    .citations {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6b7280;
+      max-width: 85%;
+    }
+    .citations .cite {
+      display: inline-block;
+      background: #eef2ff;
+      color: #3730a3;
+      border-radius: 6px;
+      padding: 2px 8px;
+      margin: 2px 4px 0 0;
+    }
+    .typing { color: #9ca3af; font-style: italic; }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .chip {
+      padding: 5px 10px;
+      font-size: 11px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #374151;
+      font-weight: 500;
+    }
+    .chip:hover { background: #e5e7eb; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input-row input { flex: 1; margin-bottom: 0; }
+    .chat-input-row button { width: auto; padding: 10px 20px; }
   </style>
 </head>
 <body>
@@ -179,6 +297,23 @@
     <div class="success" id="success"></div>
     <div class="profile" id="profile"></div>
 
+    <div class="summary" id="summary">
+      <hr class="divider" />
+      <h2>My account summary</h2>
+      <div class="totals">
+        <div class="total-box due">
+          <div class="amount" id="sum-dues">—</div>
+          <div class="label">Outstanding dues</div>
+        </div>
+        <div class="total-box fine">
+          <div class="amount" id="sum-fines">—</div>
+          <div class="label">Unpaid fines</div>
+        </div>
+      </div>
+      <ul id="sum-dues-items"></ul>
+      <ul id="sum-fines-items"></ul>
+    </div>
+
     <div class="hint">
       <strong>Demo password:</strong> <code>replace-on-first-login</code><br/>
       Works only when <code>ALLOW_DEV_PASSWORD_PLACEHOLDERS=true</code> in
@@ -197,15 +332,43 @@
     <div class="token-preview" id="token-preview"></div>
   </div>
 
+  <div class="card chat-card">
+    <h1>Chat</h1>
+    <p class="subtitle">Ask public policy questions or your own account questions</p>
+    <div class="chat-identity" id="chat-identity">
+      Chatting as: <strong>anonymous</strong> — public questions only; sign in for account questions.
+    </div>
+
+    <div class="chips" id="chips">
+      <button class="chip" data-q="What are the visitor timings?">visitor timings</button>
+      <button class="chip" data-q="What is the pet policy?">pet policy</button>
+      <button class="chip" data-q="What are my outstanding dues?">my dues</button>
+      <button class="chip" data-q="Do I have any pending fines?">my fines</button>
+      <button class="chip" data-q="What is my late fee and what rule defines it?">late fee + rule</button>
+      <button class="chip" data-q="Show my neighbor's dues">neighbor's dues (refusal)</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="chat-input-row">
+      <input id="chat-input" type="text" placeholder="Ask a question..." maxlength="1000" />
+      <button id="chat-send">Send</button>
+    </div>
+  </div>
+
   <script>
     const API = "http://localhost:8000";
     let token = null;
+    let currentEmail = null;
+    let currentRoles = [];
 
     const $ = id => document.getElementById(id);
     const errorBox = $("error");
     const successBox = $("success");
     const profileBox = $("profile");
     const tokenPreview = $("token-preview");
+    const messagesBox = $("messages");
+    const chatInput = $("chat-input");
 
     function showError(msg) {
       errorBox.textContent = msg;
@@ -221,7 +384,177 @@
       errorBox.classList.remove("show");
       successBox.classList.remove("show");
     }
+    function detailText(data) {
+      if (!data || data.detail == null) return null;
+      return typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+    }
 
+    function updateIdentity() {
+      const el = $("chat-identity");
+      if (token && currentEmail) {
+        el.innerHTML = `Chatting as: <strong>${currentEmail}</strong> (${currentRoles.join(", ")})`;
+      } else {
+        el.innerHTML = "Chatting as: <strong>anonymous</strong> — public questions only; sign in for account questions.";
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Account summary (residents only)
+    // ------------------------------------------------------------------
+    async function loadSummary() {
+      const summary = $("summary");
+      summary.classList.remove("show");
+      if (!token || !currentRoles.includes("resident")) return;
+
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [duesResp, finesResp] = await Promise.all([
+          fetch(`${API}/me/dues`, { headers }),
+          fetch(`${API}/me/fines`, { headers }),
+        ]);
+        if (!duesResp.ok || !finesResp.ok) return;
+        const dues = await duesResp.json();
+        const fines = await finesResp.json();
+
+        $("sum-dues").textContent = `Rs ${dues.total_due.toLocaleString("en-IN")}`;
+        $("sum-fines").textContent = `Rs ${fines.total_unpaid_fines.toLocaleString("en-IN")}`;
+
+        $("sum-dues-items").innerHTML = dues.items.length
+          ? dues.items.map(c =>
+              `<li>${c.charge_month} ${c.charge_year} — Rs ${c.amount.toLocaleString("en-IN")} (${c.status})</li>`
+            ).join("")
+          : "<li>No outstanding charges.</li>";
+
+        const unpaidFines = fines.items.filter(f => f.status === "unpaid");
+        $("sum-fines-items").innerHTML = unpaidFines.length
+          ? unpaidFines.map(f =>
+              `<li>${f.fine_type.replaceAll("_", " ")} — Rs ${f.amount.toLocaleString("en-IN")} (${f.fine_date})</li>`
+            ).join("")
+          : "<li>No unpaid fines.</li>";
+
+        summary.classList.add("show");
+      } catch {
+        /* summary is best-effort; chat still works */
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Chat
+    // ------------------------------------------------------------------
+    function scrollChat() {
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    function appendUserMsg(text) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg user";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      wrap.appendChild(bubble);
+      messagesBox.appendChild(wrap);
+      scrollChat();
+    }
+
+    function appendTyping() {
+      const wrap = document.createElement("div");
+      wrap.className = "msg assistant";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble typing";
+      bubble.textContent = "Thinking...";
+      wrap.appendChild(bubble);
+      messagesBox.appendChild(wrap);
+      scrollChat();
+      return wrap;
+    }
+
+    function appendAnswer(data) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg assistant" + (data.refused ? " refused" : "");
+
+      const badge = document.createElement("span");
+      badge.className = `route-badge ${data.route_type}`;
+      badge.textContent = data.route_type;
+      wrap.appendChild(badge);
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = data.answer;
+      wrap.appendChild(bubble);
+
+      if (data.citations && data.citations.length) {
+        const cites = document.createElement("div");
+        cites.className = "citations";
+        cites.textContent = "Sources: ";
+        for (const c of data.citations) {
+          const tag = document.createElement("span");
+          tag.className = "cite";
+          tag.textContent = `${c.title} (${c.document_type}, ${c.issue_date})`;
+          cites.appendChild(tag);
+        }
+        wrap.appendChild(cites);
+      }
+
+      messagesBox.appendChild(wrap);
+      scrollChat();
+    }
+
+    function appendErrorNote(msg) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg assistant refused";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = `Request failed: ${msg}. Is the backend running on ${API}?`;
+      wrap.appendChild(bubble);
+      messagesBox.appendChild(wrap);
+      scrollChat();
+    }
+
+    async function sendChat(text) {
+      const query = text.trim();
+      if (!query) return;
+      appendUserMsg(query);
+      const typing = appendTyping();
+      try {
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const resp = await fetch(`${API}/chat/query`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ query }),
+        });
+        const data = await resp.json();
+        typing.remove();
+        if (!resp.ok) {
+          appendErrorNote(detailText(data) || `HTTP ${resp.status}`);
+          return;
+        }
+        appendAnswer(data);
+      } catch (err) {
+        typing.remove();
+        appendErrorNote(err.message);
+      }
+    }
+
+    $("chat-send").addEventListener("click", () => {
+      sendChat(chatInput.value);
+      chatInput.value = "";
+      chatInput.focus();
+    });
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendChat(chatInput.value);
+        chatInput.value = "";
+      }
+    });
+    document.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => sendChat(chip.dataset.q));
+    });
+
+    // ------------------------------------------------------------------
+    // Auth (unchanged behavior + summary/identity hooks)
+    // ------------------------------------------------------------------
     $("login-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       clearMessages();
@@ -237,19 +570,26 @@
         });
         const data = await resp.json();
         if (!resp.ok) {
-          throw new Error(data.detail || `HTTP ${resp.status}`);
+          throw new Error(detailText(data) || `HTTP ${resp.status}`);
         }
         token = data.access_token;
+        currentEmail = email;
+        currentRoles = data.roles;
         showSuccess(`Signed in as ${email} — role: ${data.roles.join(", ")}`);
         $("btn-me").disabled = false;
         $("btn-logout").disabled = false;
         tokenPreview.textContent = `token: ${token.slice(0, 40)}...`;
+        updateIdentity();
+        loadSummary();
       } catch (err) {
         showError(`Login failed: ${err.message}`);
         token = null;
+        currentEmail = null;
+        currentRoles = [];
         $("btn-me").disabled = true;
         $("btn-logout").disabled = true;
         tokenPreview.textContent = "";
+        updateIdentity();
       } finally {
         $("login-btn").disabled = false;
       }
@@ -264,7 +604,7 @@
         });
         const data = await resp.json();
         if (!resp.ok) {
-          throw new Error(data.detail || `HTTP ${resp.status}`);
+          throw new Error(detailText(data) || `HTTP ${resp.status}`);
         }
         profileBox.textContent = JSON.stringify(data, null, 2);
         profileBox.classList.add("show");
@@ -277,12 +617,16 @@
 
     $("btn-logout").addEventListener("click", () => {
       token = null;
+      currentEmail = null;
+      currentRoles = [];
       profileBox.classList.remove("show");
+      $("summary").classList.remove("show");
       successBox.classList.remove("show");
       errorBox.classList.remove("show");
       tokenPreview.textContent = "";
       $("btn-me").disabled = true;
       $("btn-logout").disabled = true;
+      updateIdentity();
       showSuccess("Signed out (token discarded client-side)");
     });
   </script>

@@ -8,12 +8,12 @@ This system answers:
 
 - **Public questions** from housing rules, notices, circulars, and AGM minutes
 - **Private questions** such as a resident's dues, payments, complaints, and profile data
-- **Hybrid questions** that require both document retrieval and private SQL lookup
+- **Hybrid questions** that require both document retrieval and private Excel workbook lookup
 
 The core design principle is:
 
 - **RAG for public and society documents**
-- **SQL for private resident data**
+- **Excel for private resident data**
 - **JWT + RBAC for access control**
 
 ## Why this repo exists
@@ -57,7 +57,7 @@ housing-society-ai/
 │   │   ├── api/
 │   │   ├── auth/
 │   │   ├── chat/
-│   │   ├── db/
+│   │   ├── workbook/
 │   │   ├── ingestion/
 │   │   ├── retrieval/
 │   │   ├── prompts/
@@ -73,10 +73,10 @@ housing-society-ai/
 │   └── package.json
 ├── data/
 │   ├── sample_docs/
-│   ├── synthetic_sql/
+│   ├── synthetic_excel/
 │   └── eval_queries/
 ├── scripts/
-│   ├── seed_data.py
+│   ├── seed_workbook.py
 │   ├── ingest_docs.py
 │   └── run_eval.py
 ├── deployments/
@@ -90,7 +90,8 @@ housing-society-ai/
 ## Recommended build stack
 
 - **Backend**: Python + FastAPI
-- **Database**: PostgreSQL
+- **Primary data source**: Excel workbook
+- **Optional backup database**: PostgreSQL later if needed
 - **Vector DB**: Chroma for local MVP, Pinecone/Weaviate later if needed
 - **LLM layer**: API-based LLM or local model abstraction
 - **Auth**: JWT + RBAC
@@ -100,15 +101,19 @@ housing-society-ai/
 ## Project phases
 
 ### Phase 0 — Docs and data model
+
 Write the core specs before coding.
 
 ### Phase 1 — MVP
-Build auth, SQL, ingestion, vector retrieval, query router, and chat API.
+
+Build auth, Excel workbook handling, ingestion, vector retrieval, query router, and chat API.
 
 ### Phase 2 — Quality and safety
+
 Add guardrails, audit logs, refusal behavior, and evaluations.
 
 ### Phase 3 — Resume polish
+
 Deploy, add clean UI, provide demo data, screenshots, and a short demo video.
 
 ## What success looks like
@@ -137,6 +142,7 @@ Start in this order:
 ## Notes
 
 - Use **synthetic data first** if real society data is not available.
-- Keep **private resident data out of vector embeddings**.
+- Keep **private resident workbook data out of vector embeddings**.
 - Treat this as a **secure product system**, not just a chatbot.
 - Keep auditability and refusal behavior visible in the implementation.
+- Use **Excel as the primary admin-facing operational tool** for charges and fines.

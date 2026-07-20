@@ -135,11 +135,16 @@ def test_upload_then_ingest_lands_in_vector_store():
     data = {"title": "E2E Zebra Notice", "document_type": "notice", "issue_date": "2026-07-19"}
     upload = client.post("/admin/documents/upload", headers=headers, files=files, data=data)
     assert upload.status_code == 201
+    doc_id = upload.json()["id"]
+    try:
+        resp = client.post("/admin/documents/ingest", headers=headers)
+        assert resp.status_code == 200
+        jobs = [j for j in resp.json() if j["document_id"] == doc_id]
+        assert len(jobs) == 1
+        assert jobs[0]["status"] == "completed"
 
-    resp = client.post("/admin/documents/ingest", headers=headers)
-    assert resp.status_code == 200
-    jobs = [j for j in resp.json() if j["document_id"] == upload.json()["id"]]
-    assert len(jobs) == 1
-    assert jobs[0]["status"] == "completed"
-
-    assert vector_store.count_chunks() > before
+        assert vector_store.count_chunks() > before
+    finally:
+        # Keep the shared dev store clean (delete also removes embeddings).
+        client.delete(f"/admin/documents/{doc_id}", headers=headers)
+        assert vector_store.count_chunks() == before

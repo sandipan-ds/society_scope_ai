@@ -1,115 +1,200 @@
-# Project Document Index
+# 00_INDEX.md
 
-This index explains the recommended reading and execution order for the Housing Society AI Assistant project documents.
+## Purpose of This Index
 
-It is designed for three audiences:
+This repository contains the planning, architecture, security, data, and implementation documents for a **Housing Society AI Assistant**.
 
-- **Coding agents** that need a build sequence
-- **Stakeholders/managers** that need product and delivery clarity
-- **Beginners/collaborators** that need a structured overview
+The project is intentionally documented in a structured way so that developers, coding agents, reviewers, and stakeholders can understand:
 
-## Recommended order
+- what the system is supposed to do
+- what is in scope for the MVP
+- how public and private data are separated
+- where access control is enforced
+- how RAG, SQL, and orchestration fit together
+- what order implementation should follow
 
-### 1. [01_README.md](01_README.md)
-**Purpose:** Entry point for the repository.
+This index is the recommended entry point after `AGENTS.md`.
 
-Read this first to understand what the project is, why it exists, who it is for, the suggested folder structure, and how the rest of the documents are organized.
+---
 
-### 2. [02_PRD.md](02_PRD.md)
-**Purpose:** Product Requirements Document.
+## Recommended Reading Paths
 
-Defines the problem, target users, core use cases, MVP scope, out-of-scope features, success criteria, and the main product goals.
+### For coding agents and engineers implementing features
 
-### 3. [03_ARCHITECTURE.md](03_ARCHITECTURE.md)
-**Purpose:** System architecture blueprint.
+Read in this order:
 
-Explains how the project is split into frontend, backend, auth, SQL, vector retrieval, ingestion, query router, LLM orchestration, logging, and response formatting.
+1. `AGENTS.md`
+2. `00_INDEX.md`
+3. `coding-agent-workflow.md`
+4. `01_README.md`
+5. `02_PRD.md`
+6. `03_ARCHITECTURE.md`
+7. `04_DB_SCHEMA.md`
+8. `05_API_RBAC_SPEC.md`
+9. `06_RAG_INGESTION_SPEC.md`
+10. `07_PROMPT_GUARDRAILS.md`
+11. `08_SYNTHETIC_DATA_AND_TESTS.md`
+12. `09_BUILD_ORDER.md`
+13. `10_CURRENT_PROGRESS.md`
+14. `11_PERSONALIZATION.md`
+15. `12_TROUBLESHOOTING.md`
 
-### 4. [04_DB_SCHEMA.md](04_DB_SCHEMA.md)
-**Purpose:** Private data model and relational schema.
+This order moves from project intent to system design, then to implementation detail, and finally to project-state and collaboration docs.
 
-Defines the SQL tables, relationships, access boundaries, and the structured data that powers resident-specific and admin-facing functionality.
+### For reviewers and maintainers
 
-### 5. [05_API_RBAC_SPEC.md](05_API_RBAC_SPEC.md)
-**Purpose:** Endpoint contracts and authorization rules.
+Recommended order:
 
-Defines roles, permissions, protected routes, chat behavior, refusal behavior, and the API request/response structure needed for backend implementation.
+1. `AGENTS.md`
+2. `01_README.md`
+3. `02_PRD.md`
+4. `03_ARCHITECTURE.md`
+5. `05_API_RBAC_SPEC.md`
+6. `06_RAG_INGESTION_SPEC.md`
+7. `09_BUILD_ORDER.md`
+8. `10_CURRENT_PROGRESS.md`
+9. `12_TROUBLESHOOTING.md`
 
-### 6. [06_RAG_INGESTION_SPEC.md](06_RAG_INGESTION_SPEC.md)
-**Purpose:** Document ingestion and retrieval design.
+This path helps reviewers understand intent, constraints, and current implementation maturity.
 
-Explains how documents are uploaded, parsed, chunked, embedded, indexed, retrieved, filtered, and cited in responses.
+### For stakeholders or beginners
 
-### 7. [07_PROMPT_GUARDRAILS.md](07_PROMPT_GUARDRAILS.md)
-**Purpose:** AI behavior and safety rules.
+Recommended order:
 
-Defines prompt templates, privacy guardrails, refusal rules, grounding expectations, fallback behavior, and how public/private/hybrid answers should be handled.
+1. `01_README.md`
+2. `02_PRD.md`
+3. `03_ARCHITECTURE.md`
+4. `09_BUILD_ORDER.md`
+5. `10_CURRENT_PROGRESS.md`
 
-### 8. [08_SYNTHETIC_DATA_AND_TESTS.md](08_SYNTHETIC_DATA_AND_TESTS.md)
-**Purpose:** Demo data and validation plan.
+This path gives a high-level view before diving into lower-level implementation details.
 
-Defines the synthetic SQL data, synthetic document corpus, test users, acceptance scenarios, and baseline evaluation cases for local development.
+---
 
-### 9. [09_BUILD_ORDER.md](09_BUILD_ORDER.md)
-**Purpose:** Implementation sequence.
+## Document Guide
 
-This is the execution guide for the coding agent or developer. It gives the step-by-step build order from scaffolding to auth, SQL, ingestion, retrieval, chat orchestration, tests, UI, and deployment prep.
+### `AGENTS.md`
+Root instruction file for coding agents. Defines repo-level rules, workflow expectations, architecture constraints, and contribution standards.
 
-## Additional project documents
+### `coding-agent-workflow.md`
+Detailed execution workflow for non-trivial coding-agent tasks. Explains how to classify work, inspect entry points and dependencies, identify critical and risky areas, choose the smallest safe change, and verify the result with tests and progress updates.
 
-### 10. [10_CURRENT_PROGRESS.md](10_CURRENT_PROGRESS.md)
-Tracks the live status of the project, including what is done, what is in progress, what is blocked, and what should happen next.
+### `01_README.md`
+High-level overview of the project, its purpose, audience, suggested repo structure, stack, development phases, and success criteria.
 
-### 11. [11_PERSONALIZATION.md](11_PERSONALIZATION.md)
-Defines how the assistant and collaborating agents should communicate while working on this project, including response behavior, tone, structure, clarification style, and writing preferences.
+### `02_PRD.md`
+Defines the product problem, goals, target users, MVP scope, functional expectations, non-functional requirements, and risks.
 
+### `03_ARCHITECTURE.md`
+Explains the hybrid design: public knowledge through RAG, private resident data through SQL, orchestration flow, module layout, and security enforcement points.
 
-## Best way to use this index
+### `04_DB_SCHEMA.md`
+Defines the simplified MVP schema, key tables, relationships, and practical data-modeling rules for resident, charge, fine, and document data.
 
-### For coding agents
-Read documents in order from **1 to 9**, then use `BUILD_ORDER.md` as the implementation checklist.
+### `05_API_RBAC_SPEC.md`
+Specifies roles, permissions, protected routes, endpoint behavior, refusal logic, error policy, and audit expectations.
 
-### For stakeholders/managers
-Focus first on:
+### `06_RAG_INGESTION_SPEC.md`
+Defines the ingestion pipeline, chunking, metadata, vector storage expectations, retrieval routes, prompt inputs, citation rules, and failure handling.
 
-- `README.md`
-- `PRD.md`
-- `ARCHITECTURE.md`
-- `BUILD_ORDER.md`
+### `07_PROMPT_GUARDRAILS.md`
+Documents prompt-level behavior, privacy guardrails, refusal rules, and answer-shaping expectations for the AI layer.
 
-These give the clearest view of project value, scope, system design, and delivery plan.
+### `08_SYNTHETIC_DATA_AND_TESTS.md`
+Describes the synthetic data, seed expectations, acceptance scenarios, and test coverage needed for local development and demos.
 
-### For beginners/collaborators
-Start with:
+### `09_BUILD_ORDER.md`
+Provides the implementation sequence for building the system safely from backend foundations through frontend and polish.
 
-- `README.md`
-- `PRD.md`
-- `ARCHITECTURE.md`
-- `DB_SCHEMA.md`
+### `10_CURRENT_PROGRESS.md`
+Tracks what is complete, in progress, blocked, and next.
 
-Then move into the technical implementation specs.
+### `11_PERSONALIZATION.md`
+Defines communication and collaboration style expectations for the assistant and collaborating agents.
 
-## Quick summary of document roles
+### `12_TROUBLESHOOTING.md`
+Captures important bugs, fixes, root causes, and lessons learned.
 
-| No. | Document | Main role |
-|---|---|---|
-| 1 | `README.md` | Repo entry point and overview |
-| 2 | `PRD.md` | Product scope and requirements |
-| 3 | `ARCHITECTURE.md` | Technical system design |
-| 4 | `DB_SCHEMA.md` | SQL data model |
-| 5 | `API_RBAC_SPEC.md` | API contracts and permissions |
-| 6 | `RAG_INGESTION_SPEC.md` | Retrieval and document pipeline |
-| 7 | `PROMPT_GUARDRAILS.md` | LLM behavior and safety |
-| 8 | `SYNTHETIC_DATA_AND_TESTS.md` | Demo data and validation |
-| 9 | `BUILD_ORDER.md` | Build sequence and execution plan |
+---
 
-## Suggested future additions
+## How to Use the Docs During Implementation
 
-If the project grows, add these after the current set:
+### When starting a new feature
 
-- `DEPLOYMENT.md`
-- `EVALUATION_PLAN.md`
-- `UI_UX_SPEC.md`
-- `RESUME_CASE_STUDY.md`
-- `ER_DIAGRAM.mmd`
-- `ARCHITECTURE_FLOW.mmd`
+Read:
+
+- `02_PRD.md`
+- `03_ARCHITECTURE.md`
+- `05_API_RBAC_SPEC.md`
+- `06_RAG_INGESTION_SPEC.md`
+- `09_BUILD_ORDER.md`
+
+Then review any directly relevant progress and troubleshooting notes.
+
+### When changing schema or private-data behavior
+
+Read:
+
+- `04_DB_SCHEMA.md`
+- `05_API_RBAC_SPEC.md`
+- `03_ARCHITECTURE.md`
+
+Confirm that private data remains in SQL and scoped correctly.
+
+### When changing retrieval, ingestion, or citations
+
+Read:
+
+- `06_RAG_INGESTION_SPEC.md`
+- `03_ARCHITECTURE.md`
+- `07_PROMPT_GUARDRAILS.md`
+
+Confirm grounding, metadata, and versioning expectations remain intact.
+
+### When changing chat behavior or refusals
+
+Read:
+
+- `05_API_RBAC_SPEC.md`
+- `06_RAG_INGESTION_SPEC.md`
+- `07_PROMPT_GUARDRAILS.md`
+
+Confirm answer types, refusal behavior, and privacy boundaries remain correct.
+
+---
+
+## Documentation Principles for This Repo
+
+When adding or editing code, contributors should preserve these documented principles:
+
+- **Public and private data are handled differently on purpose**
+- **Access control is enforced in backend logic, not delegated to prompts**
+- **The MVP should stay simple, practical, and locally demoable**
+- **Answers should be grounded and explainable**
+- **Refusal behavior is a required feature, not a fallback**
+- **Progress and troubleshooting should be documented as the project evolves**
+
+---
+
+## Quick Navigation Summary
+
+If you only remember one sequence, use this:
+
+1. `AGENTS.md`
+2. `01_README.md`
+3. `02_PRD.md`
+4. `03_ARCHITECTURE.md`
+5. `04_DB_SCHEMA.md`
+6. `05_API_RBAC_SPEC.md`
+7. `06_RAG_INGESTION_SPEC.md`
+8. `09_BUILD_ORDER.md`
+9. `10_CURRENT_PROGRESS.md`
+10. `12_TROUBLESHOOTING.md`
+
+That path covers purpose, architecture, constraints, execution order, and current reality.
+
+---
+
+## Final Note
+
+This documentation set is designed to reduce ambiguity. When code, assumptions, or requests conflict with the docs, prefer the docs and surface the conflict clearly before implementation.

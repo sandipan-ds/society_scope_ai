@@ -1,329 +1,383 @@
-# Database Schema (Simplified MVP)
+# 04_DB_SCHEMA.md
 
 ## Purpose
 
-This version of the schema is intentionally simple.
+This document defines the primary data structure for the Housing Society AI Assistant project.
 
-It is designed for a single housing society MVP where the main needs are:
+The project will use an **Excel workbook as the primary operational data source** for housing society charges and fines. This is intentionally designed for practicality and ease of use, since society admins are far more likely to work comfortably with Excel than with SQL tools.
 
-- store flat number and resident details
-- track monthly society charges as paid or unpaid
-- track fines such as wrong parking or rule violations
-- support login for residents/admins
-- support RAG documents separately from private resident data
+Excel is the **single source of truth for day-to-day data entry and maintenance tracking**.
 
-For this project, **simple and practical is better than over-engineered**.
-
-## Society scale assumption
-
-Example scale:
-
-- 19 storeys
-- ground floor excluded from flats
-- 6 flats per floor
-- about **108 flats** total
-
-This scale does **not** need a complex enterprise schema.
-
-## Important design choice
-
-Do **not** store months like `jan`, `feb`, `mar` as separate database columns.
-
-That style works in Excel, but it becomes messy in an app because:
-
-- it is hard to support multiple years
-- it is hard to query unpaid months cleanly
-- it is hard to track exact paid dates and amounts
-- it becomes awkward for reports and analytics
-
-Instead, store **one row per flat/resident per month**.
-
-## Recommended minimal tables
-
-### 1. users
-
-Use this table only if you want login.
-
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| email | VARCHAR | Unique login email |
-| password_hash | TEXT | Hashed password |
-| role | VARCHAR | `resident` or `admin` |
-| resident_id | FK -> residents.id, nullable | Linked resident for resident users |
-| is_active | BOOLEAN | Active/inactive account |
-| created_at | TIMESTAMP | Audit field |
-
-**Why it exists:**
-- supports JWT login
-- separates authentication from resident profile data
+A database may be considered later only as a backup or integration layer, but **it is not part of the primary operating model** and should not be required for routine use.
 
 ---
 
-### 2. residents
+## Core decision
 
-Main resident master table.
+The project will use:
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| flat_no | VARCHAR | Example: `A-101` |
-| resident_name | VARCHAR | Primary resident name |
-| phone | VARCHAR | Contact number |
-| email | VARCHAR | Contact email |
-| is_owner | BOOLEAN | Owner or tenant flag |
-| is_active | BOOLEAN | Current resident status |
-| created_at | TIMESTAMP | Audit field |
-| updated_at | TIMESTAMP | Audit field |
+- **Excel workbook as the primary data entry and management system**
+- **No SQL database for regular operational use**
+- **Formula-driven calculations inside Excel**
+- **Worksheet-based categorization for maintenance charges and fines**
 
-**Why it exists:**
-- stores the core flat + person information
-- easy for admin view and resident linking
-
-**Example row:**
-
-| flat_no | resident_name | phone | email |
-|---|---|---|---|
-| A-101 | Amit Sharma | 9876543210 | amit@example.com |
+This design keeps the system accessible to non-technical users and reduces operational friction.
 
 ---
 
-### 3. monthly_charges
+## Design goals
 
-Tracks society maintenance/charges month by month.
+The workbook must be designed to meet the following goals:
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| resident_id | FK -> residents.id | Linked resident |
-| charge_year | INTEGER | Example: `2026` |
-| charge_month | VARCHAR | Example: `jan`, `feb`, `mar` |
-| amount | NUMERIC | Society charge amount |
-| status | VARCHAR | `paid`, `unpaid`, `partial` |
-| paid_date | DATE, nullable | Filled if paid |
-| remarks | TEXT, nullable | Optional note |
-| created_at | TIMESTAMP | Audit field |
-
-**Why it exists:**
-- lets you ask questions like:
-  - which months are unpaid?
-  - how much is due this year?
-  - when was March paid?
-- works across multiple years without changing schema
-
-**Example rows:**
-
-| resident_id | charge_year | charge_month | amount | status | paid_date |
-|---|---|---|---|---|---|
-| 1 | 2026 | jan | 2500 | paid | 2026-01-05 |
-| 1 | 2026 | feb | 2500 | unpaid | null |
-| 1 | 2026 | mar | 2500 | paid | 2026-03-07 |
+- Excel is the **single source of truth**
+- The workbook is easy for non-technical users to understand and maintain
+- Resident data is edited in only one place
+- Financial worksheets follow the same structure for consistency
+- Maintenance charges are pre-filled automatically
+- Fine worksheets default to zero values
+- Monthly totals update automatically using formulas
+- New fine categories can be added by duplicating an existing fine worksheet
+- No manual calculations should be required
+- No SQL knowledge should be needed to operate the system
 
 ---
 
-### 4. fines
+## Workbook structure
 
-Tracks fines such as wrong parking, late fee, or other rule violations.
+The workbook should contain the following worksheets:
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| resident_id | FK -> residents.id | Linked resident |
-| fine_type | VARCHAR | `wrong_parking`, `late_fee`, `damage`, `other` |
-| description | TEXT | Reason for fine |
-| amount | NUMERIC | Fine amount |
-| fine_date | DATE | Date issued |
-| status | VARCHAR | `paid`, `unpaid`, `waived` |
-| remarks | TEXT, nullable | Optional note |
-| created_at | TIMESTAMP | Audit field |
+1. `Residents`
+2. `Maintenance Charges`
+3. `Parking Violation Fines`
+4. `Waste Management Fines`
+5. `Pet Policy Fines`
+6. `Noise Violation Fines`
+7. `Property Damage Fines`
+8. `Miscellaneous Fines`
 
-**Why it exists:**
-- separate sheet/table for penalty records
-- one resident can have zero, one, or many fines
-
-**Example rows:**
-
-| resident_id | fine_type | description | amount | fine_date | status |
-|---|---|---|---|---|---|
-| 1 | wrong_parking | Parked in visitor slot | 500 | 2026-07-05 | unpaid |
-| 1 | late_fee | Late payment charge for February | 200 | 2026-02-15 | paid |
+If a new fine category is needed in the future, users should be able to duplicate any existing fine worksheet and rename it without changing the workbook design.
 
 ---
 
-### 5. documents
+## Schema model
 
-Stores metadata for society documents used by the RAG system.
+The workbook uses **two schema patterns**:
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| title | VARCHAR | Document title |
-| document_type | VARCHAR | `notice`, `policy`, `agm_minutes`, `circular` |
-| file_name | VARCHAR | Stored file name |
-| issue_date | DATE | Notice/policy date |
-| uploaded_by | FK -> users.id, nullable | Admin uploader |
-| created_at | TIMESTAMP | Audit field |
+1. A dedicated **master data schema** for the `Residents` worksheet
+2. A shared **financial worksheet schema** for `Maintenance Charges` and all fine worksheets
 
-**Why it exists:**
-- keeps track of uploaded notice/policy files
-- actual chunks/embeddings live in the vector store, not in this table
+This keeps resident identity management clean while preserving a consistent month-wise financial structure across charges and fines.
 
 ---
 
-### 6. audit_logs (optional but recommended)
+## Residents (Master Data)
 
-Useful if you want the project to look stronger and more secure.
+This worksheet is the **master source of truth** for all resident information. Any changes made here must automatically be reflected in every other worksheet.
 
-| Column | Type | Notes |
-|---|---|---|
-| id | UUID / SERIAL | Primary key |
-| user_id | FK -> users.id, nullable | Actor |
-| action | VARCHAR | Example: `login`, `query_private`, `upload_document`, `access_denied` |
-| details | TEXT | Short event description |
-| created_at | TIMESTAMP | Event timestamp |
+### Schema
 
-**Why it exists:**
-- useful for debugging
-- useful for admin visibility
-- useful for demonstrating secure access tracking on a resume
+| Flat No. | Owner Name | Resident Name | Occupancy Type | Owner Email | Owner Mobile | Resident Email | Resident Mobile |
+| -------- | ---------- | ------------- | -------------- | ----------- | ------------ | -------------- | --------------- |
 
-## Relationships
+### Column definitions
 
-```text
-residents 1--* monthly_charges
-residents 1--* fines
-residents 1--0..1 users
-users 1--* documents
-users 1--* audit_logs
-```
+- **Flat No.** – Unique flat identifier.
+- **Owner Name** – Legal owner of the flat.
+- **Resident Name** – Person currently living in the flat.
+- **Occupancy Type** – Excel dropdown with only two allowed values:
+  - `Owner`
+  - `Rental`
+- **Owner Email** – Owner's email address.
+- **Owner Mobile** – Owner's mobile number.
+- **Resident Email** – Resident's email address.
+- **Resident Mobile** – Resident's mobile number.
 
-## What the app can answer from this schema
+### Auto-fill logic
 
-### Private SQL questions
+#### If **Occupancy Type = Owner**
 
-- What is my flat number?
-- What is my phone/email on record?
-- Which months are unpaid?
-- How much society charge did I pay in March?
-- Do I have any pending fine?
-- Was I fined for wrong parking?
+The following fields should automatically populate from the owner's information:
 
-### Public/RAG questions
+- `Resident Name = Owner Name`
+- `Resident Email = Owner Email`
+- `Resident Mobile = Owner Mobile`
 
-- What are the visitor timings?
-- What is the parking policy?
-- What did the latest notice say?
-- What are the society rules for pets?
+The user should not need to enter these values manually.
 
-## Best fit with your current sheets
+#### If **Occupancy Type = Rental**
 
-If you already think in spreadsheet form, map them like this:
+The following fields should be entered manually:
 
-### Sheet 1: Resident + monthly payment data
-Can be split into:
-- `residents`
-- `monthly_charges`
+- `Resident Name`
+- `Resident Email`
+- `Resident Mobile`
 
-### Sheet 2: Fine / wrong parking data
-Can be stored in:
-- `fines`
+These values may differ from the owner's details.
 
-### Society notices / PDFs
-Can be stored as:
-- `documents` metadata + vector store chunks
+### Synchronization
 
-## Suggested seed size for local demo
+The `Residents` worksheet is the only place where resident information is edited.
 
-For a solid MVP demo, you can seed:
+Any changes made to:
 
-- 108 resident records max if you want full-building realism
-- 12 months of charges per resident
-- 10 to 30 fine records
-- 10 to 20 society documents
-- 2 to 5 admin accounts
+- `Flat No.`
+- `Owner Name`
+- `Resident Name`
+- `Occupancy Type`
+- `Owner Email`
+- `Owner Mobile`
+- `Resident Email`
+- `Resident Mobile`
 
-## Simplest possible MVP version
+must automatically update the corresponding information in every other worksheet using Excel formulas or references.
 
-If you want the smallest working version, use only these tables:
+---
 
-1. `users`
-2. `residents`
-3. `monthly_charges`
-4. `fines`
-5. `documents`
+## Common financial worksheet schema
 
-Add `audit_logs` after that.
+The following worksheets must use the same financial column structure:
 
-## Example SQL-style model summary
+- `Maintenance Charges`
+- `Parking Violation Fines`
+- `Waste Management Fines`
+- `Pet Policy Fines`
+- `Noise Violation Fines`
+- `Property Damage Fines`
+- `Miscellaneous Fines`
 
-```text
-users
-- id
-- email
-- password_hash
-- role
-- resident_id
-- is_active
-- created_at
+### Schema
 
-residents
-- id
-- flat_no
-- resident_name
-- phone
-- email
-- is_owner
-- is_active
-- created_at
-- updated_at
+| Flat No. | Resident Name | Email | Mobile No. | Jan-26 | Feb-26 | Mar-26 | Apr-26 | May-26 | Jun-26 | Jul-26 | Aug-26 | Sep-26 | Oct-26 | Nov-26 | Dec-26 |
+|----------|----------------|-------|------------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
 
-monthly_charges
-- id
-- resident_id
-- charge_year
-- charge_month
-- amount
-- status
-- paid_date
-- remarks
-- created_at
+### Requirements
 
-fines
-- id
-- resident_id
-- fine_type
-- description
-- amount
-- fine_date
-- status
-- remarks
-- created_at
+- **Resident Name** should contain both the first name and surname in a single column.
+- **Email** should use the resident's email from the `Residents` worksheet.
+- **Mobile No.** should use the resident's mobile number from the `Residents` worksheet.
+- Every resident should appear in every financial worksheet.
 
-documents
-- id
-- title
-- document_type
-- file_name
-- issue_date
-- uploaded_by
-- created_at
+### Synchronization rule
 
-audit_logs
-- id
-- user_id
-- action
-- details
-- created_at
-```
+In all financial worksheets, the identity fields should be linked from the `Residents` worksheet using Excel formulas or references so users never need to update resident information manually in multiple places.
 
-## Recommendation
+At minimum, the following should stay synchronized from `Residents`:
 
-For this project, this simplified schema is the right starting point.
+- `Flat No.`
+- `Resident Name`
+- `Resident Email` mapped into `Email`
+- `Resident Mobile` mapped into `Mobile No.`
 
-It is:
+---
 
-- easy to understand
-- easy to seed with synthetic data
-- easy to connect with login + RAG
-- strong enough for an MVP and resume project
-- much better than overcomplicating the database too early
+## Master data synchronization model
+
+All non-resident worksheets must link resident identity fields from the `Residents` worksheet.
+
+This ensures:
+
+- resident details are maintained in only one place
+- data remains consistent across worksheets
+- updates propagate automatically
+- user error is reduced
+
+### Recommended linking approach
+
+For each non-resident worksheet:
+
+- `Flat No.` should be linked from the `Residents` sheet
+- `Resident Name` should be linked from the `Residents` sheet
+- `Email` should be linked from `Resident Email` in the `Residents` sheet
+- `Mobile No.` should be linked from `Resident Mobile` in the `Residents` sheet
+- row order should remain aligned across worksheets for simplicity
+
+### Operational assumption
+
+The workbook should maintain the same resident row order across all worksheets.
+
+This keeps formulas simple and makes the workbook easier for non-technical users to understand.
+
+If row order changes later, a more advanced lookup-based approach may be used, but the default design should favor clarity and maintainability.
+
+---
+
+## Default values
+
+### Residents worksheet
+
+The `Residents` worksheet stores only master resident information and occupancy details.
+
+It should not require monthly financial columns.
+
+### Maintenance Charges worksheet
+
+Every resident should have a default maintenance charge of **INR 3,500** for every month from `Jan-26` through `Dec-26`.
+
+These values should be pre-filled when the workbook is created.
+
+### Fine worksheets
+
+Every monthly cell in every fine worksheet should default to **INR 0**.
+
+Users should only replace `0` with the applicable fine amount when a fine is issued.
+
+---
+
+## Maintenance Charges worksheet behavior
+
+The `Maintenance Charges` worksheet is the primary sheet for viewing the resident’s monthly amount due.
+
+Each resident must appear in this worksheet.
+
+Each month should calculate the total payable amount automatically.
+
+### Calculation rule
+
+For every resident and every month:
+
+**Total Amount Due = INR 3,500 + Sum of all applicable fines for that month**
+
+This means the value shown in each month column of `Maintenance Charges` should be formula-driven.
+
+It should automatically update whenever any fine value is added, changed, or removed in any fine worksheet.
+
+---
+
+## Fine worksheet behavior
+
+Each fine worksheet represents a single fine category.
+
+These worksheets must include all residents and use the same financial column structure.
+
+Examples of fine categories include:
+
+- Parking Violation Fines
+- Waste Management Fines
+- Pet Policy Fines
+- Noise Violation Fines
+- Property Damage Fines
+- Miscellaneous Fines
+
+### Fine entry rule
+
+Users should enter the fine amount in the relevant month column for the relevant resident.
+
+Default monthly values must be **INR 0**.
+
+No manual summation or cross-sheet calculation should be required from the user.
+
+The `Maintenance Charges` worksheet must automatically include all fines from all fine worksheets.
+
+---
+
+## Property Damage Fines scope
+
+The `Property Damage Fines` worksheet should be used for fines related to damage caused to society property.
+
+This may include damage to:
+
+- lifts
+- walls
+- gates
+- gardens
+- clubhouse assets
+- CCTV systems
+- lighting
+- any other shared society property
+
+This worksheet follows the same schema and rules as all other fine worksheets.
+
+---
+
+## Formula design expectations
+
+The workbook should rely on Excel formulas for automation.
+
+### Formula goals
+
+Formulas should ensure that:
+
+- resident identity fields remain synced from `Residents`
+- owner-to-resident auto-fill works correctly when `Occupancy Type = Owner`
+- rental resident fields remain editable when `Occupancy Type = Rental`
+- maintenance charges are pre-filled consistently
+- fine sheets default to zero values
+- monthly totals in `Maintenance Charges` update automatically
+
+### Formula design preference
+
+The formula strategy should prioritize:
+
+- simplicity
+- readability
+- low maintenance burden
+- compatibility with common Excel usage patterns
+- ease of extension when duplicating fine sheets
+
+Where possible, the workbook should avoid overly complex formulas if a simpler row-aligned approach can achieve the same result.
+
+---
+
+## Extensibility rule
+
+If a new fine category is introduced later, users should be able to:
+
+1. duplicate an existing fine worksheet
+2. rename the duplicated sheet
+3. keep the same schema
+4. continue using the workbook without structural redesign
+
+This is a key usability requirement.
+
+The workbook should therefore be designed with repeatable worksheet patterns rather than category-specific schemas.
+
+---
+
+## Operational model summary
+
+The workbook follows this model:
+
+- `Residents` = master owner/resident data
+- `Maintenance Charges` = calculated payable amounts per month
+- fine worksheets = category-specific monthly fine entries
+- formulas = automatic syncing and aggregation logic
+
+This creates a simple workflow:
+
+1. update owner and resident details only in `Residents`
+2. enter fines only in the appropriate fine worksheet
+3. review monthly totals in `Maintenance Charges`
+
+This keeps the workbook practical for common users and avoids any dependency on database administration.
+
+---
+
+## Out of scope
+
+The following are out of scope for this document unless later introduced in a separate design document:
+
+- SQL schema design for primary operations
+- database normalization strategy
+- stored procedures
+- ORM models
+- API persistence layer details
+- audit logging implementation
+- payment gateway reconciliation
+- receipt generation logic
+
+These may be added later if the system evolves beyond workbook-first operations, but they are not part of the current primary data model.
+
+---
+
+## Implementation note
+
+If the project later needs system integration, reporting automation, or backup synchronization, the Excel workbook can be exported or mirrored into another storage layer.
+
+However, the business-facing workflow should continue to treat Excel as the primary user-managed data source.
+
+---
+
+## Status
+
+Suggested status: Updated for workbook-first data model
+Suggested owner: Data design / operations workflow

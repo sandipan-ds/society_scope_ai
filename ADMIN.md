@@ -207,10 +207,12 @@ Events you'll see:
 | `login_success` / `login_failure` | authentication attempts |
 | `register` | new resident self-registration |
 | `me_view` | someone called `/auth/me` |
-| `query_private` | a resident viewed their dues/payments/fines/profile |
+| `query_private` | a resident viewed their dues/payments/fines/profile, or asked a private/hybrid chat question |
+| `query_public` | a public chat question was answered from documents |
 | `upload_document` | an admin uploaded a document |
 | `delete_document` | an admin deleted a document |
-| `access_denied` | refused private-data access (when chat is built) |
+| `ingest_trigger` / `ingestion_job` | ingestion batch triggered / individual job finished |
+| `access_denied` | refused private-data access (e.g. another resident's dues, or anonymous private query) |
 
 ### 3.5 Delete a document
 

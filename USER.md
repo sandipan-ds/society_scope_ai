@@ -53,7 +53,7 @@ python -m uvicorn app.main:app --reload --port 8000
 
 You should see: `Uvicorn running on http://127.0.0.1:8000`.
 
-### 5. Open the demo login page
+### 5. Open the demo console page
 
 In another terminal / your file browser, open:
 
@@ -63,9 +63,22 @@ C:\Users\sandi\Desktop\ML Working Folder\society_scope_ai\demo-login.html
 
 in any browser (Edge, Chrome, Firefox — just double-click the file).
 
+The page has two panels: **Sign in** (left) and **Chat** (right).
+
 ### 6. Log in
 
-Pick any of the demo accounts below, type the password, click **Sign in**, then click **Fetch my profile** to see the `/auth/me` response.
+Pick any of the demo accounts below, type the password, click **Sign in**. Residents also get an account summary (outstanding dues + unpaid fines) loaded automatically.
+
+### 7. Chat
+
+Use the chat panel on the right — signed in or not:
+
+- **Public questions** work anonymously: "What are the visitor timings?" — answers include source citations.
+- **Private questions** need a resident login: "What are my outstanding dues?" — answers come from your own SQL records only.
+- **Hybrid questions** combine both: "What is my late fee and what rule defines it?"
+- **Refusals** are shown in red: try "Show my neighbor's dues" — the request is denied and audit-logged.
+
+The colored badge above each answer shows which route the query took (`public` / `private` / `hybrid` / `refused`).
 
 ---
 
@@ -278,9 +291,40 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 | Monthly charges / fines | `database/society.db` → `monthly_charges`, `fines` |
 | Society documents (metadata) | `database/society.db` → `documents` table |
 | Audit trail (logins, denials) | `database/society.db` → `audit_logs` table |
+| **Editable data workbook** | `data/society_data.xlsx` (see below) |
 | Backend config | `backend/.env` |
-| Demo login page | `demo-login.html` (this repo root) |
+| Demo console (login + chat) | `demo-login.html` (this repo root) |
 | Tests | `backend/tests/` |
+
+---
+
+## Editing data via Excel (no SQL needed)
+
+Society members maintain the data in a normal Excel workbook; the app keeps
+using the database internally. Two scripts bridge them:
+
+```powershell
+# 1. Export the database to Excel (one sheet per table)
+python scripts/export_excel.py        # -> data/society_data.xlsx
+
+# 2. Edit the workbook in Excel, save it, then load it back
+python scripts/import_excel.py
+```
+
+The workbook has 5 sheets: `README` (editing rules), `residents`, `users`,
+`monthly_charges`, `fines`. Key rules (full list in the README sheet):
+
+- Don't rename sheets/columns or change `id` values — rows link by id.
+- New rows: leave `id` blank; one is assigned automatically.
+- Months are `jan`..`dec`; statuses and types use the documented values.
+- Dates are `YYYY-MM-DD`; booleans are `TRUE`/`FALSE`.
+
+The import validates every row (type, required fields, allowed values) and
+reports the exact Excel row on any problem — **nothing is imported until the
+whole workbook is valid**, so a typo can never half-corrupt the data.
+Documents, ingestion jobs, and audit logs are app-managed and not in the
+workbook. Re-importing resets `created_at` timestamps on replaced rows —
+expected behavior for a full refresh.
 
 ---
 
@@ -311,5 +355,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 - ~~`/me/profile`, `/me/dues`, `/me/fines`~~ ✅ built
 - ~~`/admin/documents/upload`~~ ✅ built
 - ~~Ingestion pipeline~~ ✅ built — docs are chunked + embedded into a local Chroma store
-- `/chat/query` — natural-language Q&A with citations (next)
+- ~~`/chat/query`~~ ✅ built — natural-language Q&A with routing (public/private/hybrid/refused) and citations
+- ~~Chat UI~~ ✅ built — chat panel in `demo-login.html`
 - React frontend (the demo HTML page is a placeholder)
+- Admin upload page in the demo console (the API works — see `ADMIN.md`)

@@ -130,6 +130,11 @@ def delete_document(document_id: int, db: DbSession, admin: User = AdminUser) ->
     if doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     stored = settings.upload_path / doc.file_name
+    # Remove the document's embeddings too — the store must never serve
+    # chunks from a document that no longer exists.
+    from app.retrieval import vector_store
+
+    vector_store.delete_document_chunks(document_id)
     db.delete(doc)
     db.commit()
     if stored.exists():
