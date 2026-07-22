@@ -1,4 +1,4 @@
-"""Smoke test for the FastAPI app: health + DB connectivity."""
+"""Smoke test for the FastAPI app: health + data connectivity."""
 import os
 import sys
 
@@ -19,10 +19,11 @@ def test_health():
     assert "app" in body
 
 
-def test_health_db():
+def test_health_data():
     client = TestClient(app)
-    resp = client.get("/health/db")
+    resp = client.get("/health/data")
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "ok"
-    assert body["database"] == "reachable"
+    assert body["data_source"] == "workbook"
+    assert body["state_store"] == "reachable"

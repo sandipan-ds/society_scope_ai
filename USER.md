@@ -11,7 +11,7 @@ A practical, step-by-step guide to logging in and using the demo MVP.
 Society Scope AI is a secure hybrid assistant for a housing society. It answers:
 
 - **Public questions** from society notices, policies, AGM minutes, and circulars (RAG over documents)
-- **Private questions** from your own resident account data — dues, fines, profile (SQL lookup)
+- **Private questions** from your own resident account data — dues, fines, profile (Excel workbook lookup)
 
 Access is role-based:
 - **Residents** can see only their own private data
@@ -22,13 +22,16 @@ Access is role-based:
 
 ## Quickstart — run the backend + open the demo login page
 
-### 1. Make sure the database is built and seeded
+### 1. Make sure the workbook is present
 
-```powershell
-python scripts/build_database.py --reset
+The runtime source of truth for resident data is:
+
+```
+data/members_data/Housing_Society_Charges_and_Fines_Template_108_Residents.xlsx
 ```
 
-This creates `database/society.db` with 108 flats, 12 demo login users, charges, fines, and document metadata.
+It contains `Residents`, `Maintenance Charges`, 6 fine sheets, and a `Payments` sheet.
+No database seeding is required; the app reads the workbook directly.
 
 ### 2. Install backend dependencies
 
@@ -74,7 +77,7 @@ Pick any of the demo accounts below, type the password, click **Sign in**. Resid
 Use the chat panel on the right — signed in or not:
 
 - **Public questions** work anonymously: "What are the visitor timings?" — answers include source citations.
-- **Private questions** need a resident login: "What are my outstanding dues?" — answers come from your own SQL records only.
+- **Private questions** need a resident login: "What are my outstanding dues?" — answers come from your own workbook records only.
 - **Hybrid questions** combine both: "What is my late fee and what rule defines it?"
 - **Refusals** are shown in red: try "Show my neighbor's dues" — the request is denied and audit-logged.
 
@@ -84,24 +87,32 @@ The colored badge above each answer shows which route the query took (`public` /
 
 ## Demo credentials
 
-| Role | Email | Linked flat |
-|---|---|---|
-| **Admin** | `admin1@society.in` | — |
-| **Admin** | `admin2@society.in` | — |
-| **Resident** | `resident1@society.in` | A-101 |
-| **Resident** | `resident2@society.in` | A-202 |
-| **Resident** | `resident3@society.in` | A-304 |
-| **Resident** | `resident4@society.in` | A-405 |
-| **Resident** | `resident5@society.in` | B-101 |
-| **Resident** | `resident6@society.in` | B-203 |
-| **Resident** | `resident7@society.in` | B-306 |
-| **Resident** | `resident8@society.in` | B-404 |
-| **Resident** | `resident9@society.in` | A-505 |
-| **Resident** | `resident10@society.in` | B-606 |
+All accounts use the same dev placeholder password:
 
-**Password for every account above**: `replace-on-first-login`
+```
+replace-on-first-login
+```
 
 > ⚠️ This is a **dev-only placeholder**. When real authentication is wired, each user will have their own unique password. The placeholder works only because `ALLOW_DEV_PASSWORD_PLACEHOLDERS=true` in `backend/.env`.
+
+### Admins
+
+| Role | Email |
+|---|---|
+| **Admin** | `admin1@society.in` |
+| **Admin** | `admin2@society.in` |
+
+### Residents (workbook emails)
+
+| Flat | Email |
+|---|---|
+| 101 | `meera_bhatt@demooutlook.com` |
+| 102 | `rohan_gill@demoyahoo.com` |
+| 103 | `mansi_khanna@demooutlook.com` |
+| 304 | `arjun_nair@demogmail.com` |
+| 505 | `tanmay_mhatre@demooutlook.com` |
+| 606 | `neha_das@demooutlook.com` |
+| 1806 | `nandini_nair@demogmail.com` |
 
 Each **resident** account is linked to exactly one flat — and that link is what the `/me/*` endpoints use to decide which data you can see. Admins have no flat link (they manage the society, not a household). See "Resident self-service endpoints" below for the per-account data breakdown.
 
@@ -121,7 +132,7 @@ Each **resident** account is linked to exactly one flat — and that link is wha
 | View audit logs | — | ✔ | — |
 | View query logs | — | ✔ | — |
 
-> "Committee member" is modeled as **admin** in this MVP. If you want a separate `committee` role with narrower permissions than admin, that requires a one-line change to the role enum.
+> "Committee member" is modeled as **admin** in this MVP.
 
 ---
 
@@ -158,7 +169,7 @@ The JWT is **signed** with `JWT_SECRET_KEY` from `backend/.env`. In production, 
 ```powershell
 $resp = Invoke-RestMethod -Uri "http://localhost:8000/auth/login" `
   -Method Post -ContentType "application/json" `
-  -Body '{"email":"resident1@society.in","password":"replace-on-first-login"}'
+  -Body '{"email":"meera_bhatt@demooutlook.com","password":"replace-on-first-login"}'
 
 $token = $resp.access_token
 $token
@@ -175,10 +186,10 @@ Expected response:
 
 ```json
 {
-  "user_id": 3,
-  "email": "resident1@society.in",
+  "user_id": 10101,
+  "email": "meera_bhatt@demooutlook.com",
   "roles": ["resident"],
-  "flat_no": "A-101"
+  "flat_no": "101"
 }
 ```
 
@@ -198,42 +209,19 @@ Invoke-RestMethod -Uri "http://localhost:8000/me/fines"    -Headers $headers   #
 Key behaviors:
 
 - All four require a valid JWT — anonymous calls get `401`.
-- Data is scoped server-side to your linked resident record. There is **no way** to pass another resident's id — the API doesn't accept one.
-- Every call writes a `query_private` entry to `audit_logs`.
+- Data is scoped server-side to your linked flat. There is **no way** to pass another resident's id — the API doesn't accept one.
+- Every call writes a `query_private` entry to the audit log.
 - Admin accounts (not linked to a flat) get `404` on `/me/*` — they use admin endpoints instead.
 
-### What each demo resident will actually see
+### What the template workbook shows
 
-The seeded data is deterministic, so each account returns a known result:
+The template workbook is fully zero-paid and has no fines, so every resident currently sees the same financial picture:
 
 | Account | Flat | Dues (unpaid/partial) | Total due | Paid months | Fines |
 |---|---|---|---|---|---|
-| `resident1@society.in` | A-101 | 3 (sep partial, nov, dec) | ₹7,800 | 9 | 1 (wrong_parking, unpaid, ₹500) |
-| `resident2@society.in` | A-202 | 1 | ₹2,800 | 11 | 1 (unpaid) |
-| `resident3@society.in` | A-304 | 1 | ₹2,800 | 11 | 0 |
-| `resident4@society.in` | A-405 | 2 | ₹5,600 | 10 | 0 |
-| `resident5@society.in` | B-101 | 2 | ₹5,600 | 10 | 0 |
-| `resident6@society.in` | B-203 | 2 | ₹5,300 | 10 | 0 |
-| `resident7@society.in` | B-306 | 2 | ₹5,000 | 10 | 0 |
-| `resident8@society.in` | B-404 | 0 | ₹0 | 12 | 0 |
-| `resident9@society.in` | A-505 | 1 | ₹2,500 | 11 | 0 |
-| `resident10@society.in` | B-606 | 2 | ₹4,400 | 10 | 0 |
+| `meera_bhatt@demooutlook.com` | 101 | 12 | ₹42,000 | 0 | 0 |
 
-Example — `/me/dues` as `resident1@society.in` returns:
-
-```json
-{
-  "flat_no": "A-101",
-  "total_due": 7800.0,
-  "items": [
-    { "charge_year": 2026, "charge_month": "sep", "amount": 2800.0, "status": "partial", "paid_date": "2026-09-11", "remarks": "Partial: 1400 received" },
-    { "charge_year": 2026, "charge_month": "nov", "amount": 2500.0, "status": "unpaid", "paid_date": null, "remarks": "Pending payment" },
-    { "charge_year": 2026, "charge_month": "dec", "amount": 2500.0, "status": "unpaid", "paid_date": null, "remarks": "Pending payment" }
-  ]
-}
-```
-
-> Log in as `resident8@society.in` to demo the "all paid, nothing due" case (empty dues list, `total_due: 0`).
+> The maintenance charge is ₹3,500 per month. Fines are added per fine sheet, and the `Payments` sheet marks how much was paid. Edit the workbook in Excel to change any resident's data.
 
 ### Admin endpoints
 
@@ -277,7 +265,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/me"
 # Wrong password → 401
 Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
   -ContentType "application/json" `
-  -Body '{"email":"resident1@society.in","password":"wrong"}'
+  -Body '{"email":"meera_bhatt@demooutlook.com","password":"wrong"}'
 ```
 
 ---
@@ -286,55 +274,46 @@ Invoke-RestMethod -Uri "http://localhost:8000/auth/login" -Method Post `
 
 | What | Where |
 |---|---|
-| User accounts | `database/society.db` → `users` table |
-| Resident profiles (flat, phone) | `database/society.db` → `residents` table |
-| Monthly charges / fines | `database/society.db` → `monthly_charges`, `fines` |
-| Society documents (metadata) | `database/society.db` → `documents` table |
-| Audit trail (logins, denials) | `database/society.db` → `audit_logs` table |
-| **Editable data workbook** | `data/society_data.xlsx` (see below) |
+| Resident profiles, charges, fines, payments | `data/members_data/Housing_Society_Charges_and_Fines_Template_108_Residents.xlsx` |
+| Admin accounts | `data/app_state/users.json` |
+| Society documents (metadata) | `data/app_state/documents.json` |
+| Ingestion jobs | `data/app_state/ingestion_jobs.json` |
+| Audit trail (logins, denials, queries) | `data/app_state/audit_logs.json` |
+| Uploaded files | `data/uploads/` |
+| Vector embeddings | `data/chroma/` |
 | Backend config | `backend/.env` |
 | Demo console (login + chat) | `demo-login.html` (this repo root) |
 | Tests | `backend/tests/` |
 
 ---
 
-## Editing data via Excel (no SQL needed)
+## Editing data via Excel
 
-Society members maintain the data in a normal Excel workbook; the app keeps
-using the database internally. Two scripts bridge them:
+Resident data lives in the workbook. Open it in Excel, edit the relevant sheet, and save. The backend reads the workbook on every request and caches it by file modification time, so changes appear without restarting the server.
 
-```powershell
-# 1. Export the database to Excel (one sheet per table)
-python scripts/export_excel.py        # -> data/society_data.xlsx
+### Sheets
 
-# 2. Edit the workbook in Excel, save it, then load it back
-python scripts/import_excel.py
-```
+- `Residents` — flat number, owner/resident names, occupancy type, emails, mobiles
+- `Maintenance Charges` — total amount due per month (base ₹3,500 + sum of fines)
+- `Parking Violation Fines`, `Waste Management Fines`, `Pet Policy Fines`, `Noise Violation Fines`, `Property Damage Fines`, `Miscellaneous Fines` — month-wise fine amounts per flat
+- `Payments` — amount paid per month per flat (0 = unpaid, 3500 = fully paid, partial otherwise)
 
-The workbook has 5 sheets: `README` (editing rules), `residents`, `users`,
-`monthly_charges`, `fines`. Key rules (full list in the README sheet):
+### Rules
 
-- Don't rename sheets/columns or change `id` values — rows link by id.
-- New rows: leave `id` blank; one is assigned automatically.
-- Months are `jan`..`dec`; statuses and types use the documented values.
-- Dates are `YYYY-MM-DD`; booleans are `TRUE`/`FALSE`.
-
-The import validates every row (type, required fields, allowed values) and
-reports the exact Excel row on any problem — **nothing is imported until the
-whole workbook is valid**, so a typo can never half-corrupt the data.
-Documents, ingestion jobs, and audit logs are app-managed and not in the
-workbook. Re-importing resets `created_at` timestamps on replaced rows —
-expected behavior for a full refresh.
+- Do not rename sheets or the `Flat No.` column.
+- Keep all financial sheets aligned to the same flat list and order as `Residents`.
+- Months are labeled `Jan-26` .. `Dec-26`.
+- `Maintenance Charges` values are formula-driven: `3500 + sum of fine sheets`. The app recalculates the same total independently.
 
 ---
 
 ## Privacy rules (enforced in code, not just prompts)
 
-- A resident can query **only their own** `resident_id` rows.
-- Asking "show me flat B-302's dues" returns a **refusal** + an audit log entry.
+- A resident can query **only their own** flat's records.
+- Asking "show me flat 302's dues" returns a **refusal** + an audit log entry.
 - Passwords are stored as **bcrypt hashes**, never plaintext.
 - The `DEV_PASSWORD_HASH:replace-on-first-login` placeholder exists only for demo seeding; production users get real hashes.
-- Unauthorized attempts are logged in `audit_logs`.
+- Unauthorized attempts are logged in `data/app_state/audit_logs.json`.
 
 ---
 
@@ -347,6 +326,7 @@ expected behavior for a full refresh.
 | `Login fails with correct password` | Check `ALLOW_DEV_PASSWORD_PLACEHOLDERS=true` in `backend/.env` if using seeded accounts. |
 | `Cannot reach http://localhost:8000` | Backend not running. Start it with `uvicorn app.main:app --reload --port 8000` from `backend/`. |
 | `Demo page shows CORS error` | FastAPI CORS is open (`allow_origins=["*"]`) — if you see this, the backend isn't running. |
+| `FileNotFoundError: Members data workbook not found` | The workbook at `data/members_data/Housing_Society_Charges_and_Fines_Template_108_Residents.xlsx` is missing. |
 
 ---
 

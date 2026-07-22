@@ -94,7 +94,7 @@ def test_ingest_endpoint_requires_admin():
 
     login = client.post(
         "/auth/login",
-        json={"email": "resident1@society.in", "password": "replace-on-first-login"},
+        json={"email": "meera_bhatt@demooutlook.com", "password": "replace-on-first-login"},
     )
     headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
     resp = client.post("/admin/documents/ingest", headers=headers)

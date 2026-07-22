@@ -1,6 +1,6 @@
 """Ingestion pipeline: pending job → extract → clean → chunk → embed → store.
 
-Each run updates the ingestion_jobs row so admins can see progress via
+Each run updates the ingestion job record so admins can see progress via
 GET /admin/ingestion-jobs.
 """
 from __future__ import annotations
@@ -8,26 +8,30 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from app.config.settings import get_settings
-from app.db.models import AuditLog, Document, IngestionJob
 from app.ingestion.chunker import chunk_text
 from app.ingestion.extractor import ExtractionError, clean_text, extract_text
 from app.retrieval import vector_store
+from app.statestore import (
+    StateDocument,
+    StateIngestionJob,
+    add_audit_log,
+    get_document,
+    list_ingestion_jobs,
+    update_ingestion_job,
+)
 
 SOCIETY_NAME = "Society Scope Demo Society"
 
 
-def process_job(db: Session, job: IngestionJob) -> IngestionJob:
+def process_job(job: StateIngestionJob) -> StateIngestionJob:
     """Process a single ingestion job. Never raises — failures are recorded."""
     job.status = "processing"
-    job.started_at = datetime.now(timezone.utc)
-    db.commit()
+    job.started_at = datetime.now(timezone.utc).isoformat()
+    update_ingestion_job(job)
 
     try:
-        doc = db.get(Document, job.document_id)
+        doc = get_document(job.document_id)
         if doc is None:
             raise ExtractionError(f"Document {job.document_id} not found")
 
@@ -47,7 +51,7 @@ def process_job(db: Session, job: IngestionJob) -> IngestionJob:
                 "title": doc.title,
                 "document_type": doc.document_type,
                 "source_file": doc.file_name,
-                "issue_date": doc.issue_date.isoformat(),
+                "issue_date": doc.issue_date,
                 "chunk_index": i,
                 "society_name": SOCIETY_NAME,
                 "applicable_role": "all",
@@ -58,37 +62,29 @@ def process_job(db: Session, job: IngestionJob) -> IngestionJob:
 
         job.status = "completed"
         job.error_message = None
-    except Exception as exc:  # noqa: BLE001 — record, don't crash the batch
+    except Exception as exc:  # noqa: BLE001
         job.status = "failed"
         job.error_message = str(exc)[:500]
 
-    job.finished_at = datetime.now(timezone.utc)
-    db.commit()
+    job.finished_at = datetime.now(timezone.utc).isoformat()
+    update_ingestion_job(job)
 
-    db.add(
-        AuditLog(
-            user_id=None,
-            action="ingestion_job",
-            details=f"job_id={job.id} doc_id={job.document_id} status={job.status}",
-        )
+    add_audit_log(
+        None,
+        "ingestion_job",
+        details=f"job_id={job.id} doc_id={job.document_id} status={job.status}",
     )
-    db.commit()
     return job
 
 
-def process_pending_jobs(db: Session) -> list[IngestionJob]:
+def process_pending_jobs() -> list[StateIngestionJob]:
     """Process every pending job, oldest first."""
-    jobs = list(
-        db.scalars(
-            select(IngestionJob)
-            .where(IngestionJob.status == "pending")
-            .order_by(IngestionJob.id)
-        )
-    )
-    return [process_job(db, job) for job in jobs]
+    jobs = [j for j in list_ingestion_jobs() if j.status == "pending"]
+    jobs.sort(key=lambda j: j.id)
+    return [process_job(job) for job in jobs]
 
 
-def _resolve_file(doc: Document) -> Path:
+def _resolve_file(doc: StateDocument) -> Path:
     """Locate the physical file: uploaded files first, then sample docs."""
     settings = get_settings()
     candidates = [

@@ -1,29 +1,29 @@
-"""FastAPI dependencies for authentication and role checks."""
+"""FastAPI dependencies for authentication and role checks.
+
+The Excel workbook + JSON state store are the runtime sources of truth;
+SQLAlchemy sessions are no longer required for auth.
+"""
 from __future__ import annotations
 
 from typing import Annotated, Callable
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 from app.auth.jwt import InvalidTokenError, get_subject_and_roles
-from app.db.models import User
-from app.db.session import get_db
+from app.workbook import WorkbookUser, get_user_by_email
 
 security = HTTPBearer(auto_error=False)
 
-DbSession = Annotated[Session, Depends(get_db)]
 Credentials = Annotated[HTTPAuthorizationCredentials | None, Depends(security)]
 
 
-def get_current_user(creds: Credentials, db: DbSession) -> User:
-    """Resolve the authenticated User from the Bearer token.
+def _resolve_user(email: str) -> WorkbookUser | None:
+    return get_user_by_email(email)
 
-    Raises 401 when missing/invalid token, 403 when the user no longer exists
-    or has been deactivated.
-    """
+
+def get_current_user(creds: Credentials) -> WorkbookUser:
+    """Resolve the authenticated user from the Bearer token."""
     if creds is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Bearer token")
 
@@ -32,7 +32,7 @@ def get_current_user(creds: Credentials, db: DbSession) -> User:
     except InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    user = db.scalar(select(User).where(User.email == email))
+    user = _resolve_user(email)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     if not user.is_active:
@@ -40,32 +40,30 @@ def get_current_user(creds: Credentials, db: DbSession) -> User:
     return user
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUser = Annotated[WorkbookUser, Depends(get_current_user)]
 
 
-def get_optional_user(creds: Credentials, db: DbSession) -> User | None:
-    """Like get_current_user but returns None instead of 401 when the token
-    is missing or invalid. Used by /chat/query where public questions are
-    allowed anonymously."""
+def get_optional_user(creds: Credentials) -> WorkbookUser | None:
+    """Like get_current_user but returns None when the token is missing or invalid."""
     if creds is None:
         return None
     try:
         email, _roles = get_subject_and_roles(creds.credentials)
     except InvalidTokenError:
         return None
-    user = db.scalar(select(User).where(User.email == email))
+    user = _resolve_user(email)
     if user is None or not user.is_active:
         return None
     return user
 
 
-OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+OptionalUser = Annotated[WorkbookUser | None, Depends(get_optional_user)]
 
 
-def require_role(*allowed_roles: str) -> Callable[[CurrentUser], User]:
+def require_role(*allowed_roles: str) -> Callable[[CurrentUser], WorkbookUser]:
     """Build a FastAPI dependency that enforces one of `allowed_roles`."""
 
-    def role_checker(user: CurrentUser) -> User:
+    def role_checker(user: CurrentUser) -> WorkbookUser:
         if user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -1,7 +1,6 @@
-"""Auth tests: register, login, me, role guards."""
+"""Auth tests: register disabled, login, me, role guards."""
 import os
 import sys
-import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -12,48 +11,28 @@ from app.main import app
 client = TestClient(app)
 
 
-def _unique_email(prefix: str) -> str:
-    return f"{prefix}-{uuid.uuid4().hex[:8]}@example.com"
-
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _register(email: str, password: str = "StrongPass123!") -> None:
-    resp = client.post("/auth/register", json={"email": email, "password": password, "full_name": "Test"})
-    assert resp.status_code == 201, resp.text
-
-
-def _login(email: str, password: str = "StrongPass123!") -> str:
+def _login(email: str, password: str = "replace-on-first-login") -> str:
     resp = client.post("/auth/login", json={"email": email, "password": password})
     assert resp.status_code == 200, resp.text
     return resp.json()["access_token"]
 
 
 # ---------------------------------------------------------------------------
-# Register
+# Register (disabled in Excel-only runtime)
 # ---------------------------------------------------------------------------
 
 
-def test_register_success():
+def test_register_disabled():
     resp = client.post(
         "/auth/register",
-        json={"email": _unique_email("new-resident"), "password": "StrongPass123!", "full_name": "New Resident"},
+        json={"email": "anyone@example.com", "password": "StrongPass123!", "full_name": "Test"},
     )
-    assert resp.status_code == 201
-    assert resp.json() == {"message": "User registered successfully"}
-
-
-def test_register_duplicate_email_fails():
-    email = _unique_email("dup")
-    _register(email)
-    resp = client.post(
-        "/auth/register",
-        json={"email": email, "password": "StrongPass123!", "full_name": "Dup"},
-    )
-    assert resp.status_code == 409
+    assert resp.status_code == 501
 
 
 # ---------------------------------------------------------------------------
@@ -62,9 +41,10 @@ def test_register_duplicate_email_fails():
 
 
 def test_login_success_returns_token_and_role():
-    email = _unique_email("login-ok")
-    _register(email)
-    resp = client.post("/auth/login", json={"email": email, "password": "StrongPass123!"})
+    resp = client.post(
+        "/auth/login",
+        json={"email": "meera_bhatt@demooutlook.com", "password": "replace-on-first-login"},
+    )
     assert resp.status_code == 200
     body = resp.json()
     assert body["access_token"]
@@ -73,14 +53,15 @@ def test_login_success_returns_token_and_role():
 
 
 def test_login_wrong_password_fails():
-    email = _unique_email("login-bad")
-    _register(email)
-    resp = client.post("/auth/login", json={"email": email, "password": "WrongPass123!"})
+    resp = client.post(
+        "/auth/login",
+        json={"email": "meera_bhatt@demooutlook.com", "password": "WrongPass123!"},
+    )
     assert resp.status_code == 401
 
 
 def test_login_unknown_email_fails():
-    resp = client.post("/auth/login", json={"email": _unique_email("ghost"), "password": "Anything1!"})
+    resp = client.post("/auth/login", json={"email": "ghost@example.com", "password": "Anything1!"})
     assert resp.status_code == 401
 
 
@@ -102,23 +83,21 @@ def test_me_requires_token():
 
 
 def test_me_with_valid_token_returns_user():
-    email = _unique_email("me-user")
-    _register(email)
-    token = _login(email)
+    token = _login("meera_bhatt@demooutlook.com")
     resp = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["email"] == email
+    assert body["email"] == "meera_bhatt@demooutlook.com"
     assert body["roles"] == ["resident"]
 
 
-def test_me_seeded_resident_returns_flat():
-    token = _login("resident1@society.in", password="replace-on-first-login")
+def test_me_workbook_resident_returns_flat():
+    token = _login("meera_bhatt@demooutlook.com")
     resp = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["email"] == "resident1@society.in"
-    assert body["flat_no"] == "A-101"
+    assert body["email"] == "meera_bhatt@demooutlook.com"
+    assert body["flat_no"] == "101"
     assert body["roles"] == ["resident"]
 
 

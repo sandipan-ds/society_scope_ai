@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     upload_dir: str = Field(default="data/uploads")
     chroma_dir: str = Field(default="data/chroma")
     sample_docs_dir: str = Field(default="data/sample_docs")
+    app_state_dir: str = Field(default="data/app_state")
+    members_data_file: str = Field(
+        default="data/members_data/Housing_Society_Charges_and_Fines_Template_108_Residents.xlsx"
+    )
+
+    # Base recurring maintenance charge per month, before fines (docs/04_DB_SCHEMA.md).
+    base_maintenance_charge: float = Field(default=3500.0)
 
     def _resolve(self, raw: str) -> Path:
         path = Path(raw)
@@ -44,6 +51,17 @@ class Settings(BaseSettings):
     @property
     def sample_docs_path(self) -> Path:
         return self._resolve(self.sample_docs_dir)
+
+    @property
+    def app_state_path(self) -> Path:
+        return self._resolve(self.app_state_dir)
+
+    @property
+    def members_data_path(self) -> Path:
+        path = self._resolve(self.members_data_file)
+        if not path.exists():
+            raise FileNotFoundError(f"Members data workbook not found: {path}")
+        return path
 
     @property
     def database_path(self) -> Path:

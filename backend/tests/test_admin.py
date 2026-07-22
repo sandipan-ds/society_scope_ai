@@ -11,6 +11,8 @@ from app.main import app
 
 client = TestClient(app)
 
+RESIDENT_101_EMAIL = "meera_bhatt@demooutlook.com"
+
 
 def _login(email: str, password: str = "replace-on-first-login") -> str:
     resp = client.post("/auth/login", json={"email": email, "password": password})
@@ -27,7 +29,7 @@ def _admin_headers() -> dict:
 
 
 def _resident_headers() -> dict:
-    return _auth(_login("resident1@society.in"))
+    return _auth(_login(RESIDENT_101_EMAIL))
 
 
 # ---------------------------------------------------------------------------

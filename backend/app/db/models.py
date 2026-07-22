@@ -115,7 +115,8 @@ class Fine(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "fine_type IN ('wrong_parking','late_fee','damage','other')", name="ck_fines_type"
+            "fine_type IN ('parking','waste','pet','noise','property_damage','miscellaneous')",
+            name="ck_fines_type",
         ),
         CheckConstraint("status IN ('paid','unpaid','waived')", name="ck_fines_status"),
     )

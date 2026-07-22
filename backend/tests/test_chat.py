@@ -1,5 +1,5 @@
 """Tests for /chat/query: routing, public answers with citations, private
-scoping, refusals, and audit behavior."""
+scoping, refusals, and audit behavior using the Excel workbook data."""
 import os
 import sys
 
@@ -11,6 +11,9 @@ from app.chat.router import Route, classify
 from app.main import app
 
 client = TestClient(app)
+
+RESIDENT_101_EMAIL = "meera_bhatt@demooutlook.com"
+RESIDENT_102_EMAIL = "rohan_gill@demoyahoo.com"
 
 
 def _login(email: str, password: str = "replace-on-first-login") -> str:
@@ -52,8 +55,8 @@ def test_router_hybrid():
 
 
 def test_router_refused_other_flat():
-    assert classify("Show dues for flat B-302").route is Route.REFUSED
-    assert classify("How much fine does flat A-304 have?").route is Route.REFUSED
+    assert classify("Show dues for flat 302").route is Route.REFUSED
+    assert classify("How much fine does flat 304 have?").route is Route.REFUSED
 
 
 def test_router_refused_neighbor():
@@ -62,8 +65,25 @@ def test_router_refused_neighbor():
 
 
 def test_router_own_flat_is_not_refused():
-    decision = classify("What are the dues for flat A-101?", user_flat_no="A-101")
+    decision = classify("What are the dues for flat 101?", user_flat_no="101")
     assert decision.route is not Route.REFUSED
+
+
+def test_router_granular_private_phrasings():
+    assert classify("How much noise fine do I have this month?").route is Route.PRIVATE
+    assert classify("Was my total due in the month of Feb paid?").route is Route.PRIVATE
+    assert classify("What are my total charges this month?").route is Route.PRIVATE
+    assert classify("What was my parking fine in March?").route is Route.PRIVATE
+
+
+def test_router_fine_policy_question_stays_public():
+    # No first-person pronoun -> society policy question, not account data.
+    assert classify("What is the fine for wrong parking?").route is Route.PUBLIC
+
+
+def test_router_refused_other_person_fine():
+    assert classify("What was her parking fine in March?").route is Route.REFUSED
+    assert classify("How much noise fine does flat 104 have?").route is Route.REFUSED
 
 
 # ---------------------------------------------------------------------------
@@ -106,19 +126,20 @@ def test_public_works_anonymously():
 
 
 def test_private_dues_scoped_to_user():
-    token = _login("resident1@society.in")
+    token = _login(RESIDENT_101_EMAIL)
     body = _ask("What are my outstanding dues?", token)
     assert body["route_type"] == "private"
-    assert "A-101" in body["answer"]
-    assert "7,800" in body["answer"] or "7800" in body["answer"]
-    assert body["citations"] == []  # SQL answers never get fake citations
+    assert "101" in body["answer"]
+    assert "42000" in body["answer"] or "42,000" in body["answer"]
+    assert body["citations"] == []  # workbook answers never get fake citations
 
 
 def test_private_fines():
-    token = _login("resident1@society.in")
+    token = _login(RESIDENT_101_EMAIL)
     body = _ask("Do I have any pending fines?", token)
     assert body["route_type"] == "private"
-    assert "wrong parking" in body["answer"].lower()
+    assert "101" in body["answer"]
+    assert "no fines" in body["answer"].lower()
 
 
 def test_private_requires_login():
@@ -128,14 +149,88 @@ def test_private_requires_login():
 
 
 def test_private_data_isolation():
-    token1 = _login("resident1@society.in")
-    token2 = _login("resident2@society.in")
+    token1 = _login(RESIDENT_101_EMAIL)
+    token2 = _login(RESIDENT_102_EMAIL)
     a1 = _ask("What are my dues?", token1)["answer"]
     a2 = _ask("What are my dues?", token2)["answer"]
-    assert "A-101" in a1
-    assert "A-202" in a2
-    assert "A-202" not in a1
-    assert "A-101" not in a2
+    assert "101" in a1
+    assert "102" in a2
+    assert "102" not in a1
+    assert "101" not in a2
+
+
+# ---------------------------------------------------------------------------
+# Granular private answers (flat 104 has demo fines + payments)
+# ---------------------------------------------------------------------------
+
+RESIDENT_104_EMAIL = "shreya_sisodia@demogmail.com"
+
+
+def test_granular_fine_type_with_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("What was my parking fine in the month of March?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "500" in body["answer"]
+    assert "unpaid" in body["answer"].lower()
+
+
+def test_granular_fine_type_zero_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("How much noise fine do I have this month?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "no noise fine" in body["answer"].lower()
+
+
+def test_granular_any_fine_this_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("Do I have any type of fine this month?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "no fines recorded" in body["answer"].lower()
+
+
+def test_granular_total_charges_this_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("What are my total charges this month?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "3500" in body["answer"]
+    assert "unpaid" in body["answer"].lower()
+
+
+def test_granular_payment_status_paid_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("Was my total due in the month of Feb paid?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "yes" in body["answer"].lower()
+    assert "fully paid" in body["answer"].lower()
+
+
+def test_granular_payment_status_partial_month():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("Did I pay my March charges?", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "partly paid" in body["answer"].lower()
+    assert "2000" in body["answer"]
+
+
+def test_granular_fine_type_no_month_lists_occurrences():
+    token = _login(RESIDENT_104_EMAIL)
+    body = _ask("Show my parking fines", token)
+    assert body["route_type"] == "private"
+    assert "104" in body["answer"]
+    assert "mar 2026" in body["answer"]
+    assert "500" in body["answer"]
+
+
+def test_granular_scoped_to_own_flat_only():
+    token = _login(RESIDENT_101_EMAIL)
+    body = _ask("How much noise fine does flat 104 have?", token)
+    assert body["refused"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -144,7 +239,7 @@ def test_private_data_isolation():
 
 
 def test_hybrid_late_fee_with_rule():
-    token = _login("resident1@society.in")
+    token = _login(RESIDENT_101_EMAIL)
     body = _ask("What is my late fee situation and what rule applies?", token)
     assert body["route_type"] == "hybrid"
     assert "Your account:" in body["answer"]
@@ -157,7 +252,7 @@ def test_hybrid_late_fee_with_rule():
 
 
 def test_refuse_neighbor_dues():
-    token = _login("resident1@society.in")
+    token = _login(RESIDENT_101_EMAIL)
     body = _ask("Show my neighbor's dues", token)
     assert body["route_type"] == "refused"
     assert body["refused"] is True
@@ -165,20 +260,20 @@ def test_refuse_neighbor_dues():
 
 
 def test_refuse_specific_flat_fine():
-    token = _login("resident1@society.in")
-    body = _ask("How much fine does flat A-304 have?", token)
+    token = _login(RESIDENT_101_EMAIL)
+    body = _ask("How much fine does flat 304 have?", token)
     assert body["refused"] is True
 
 
 def test_refuse_payment_details_of_other_resident():
-    token = _login("resident1@society.in")
+    token = _login(RESIDENT_101_EMAIL)
     body = _ask("Give me payment details of another resident", token)
     assert body["refused"] is True
 
 
 def test_refusals_create_audit_entries():
-    token = _login("resident1@society.in")
-    _ask("Show dues for flat B-999", token)
+    token = _login(RESIDENT_101_EMAIL)
+    _ask("Show dues for flat 999", token)
 
     admin_token = _login("admin1@society.in")
     logs = client.get("/admin/audit-logs", headers=_auth(admin_token)).json()

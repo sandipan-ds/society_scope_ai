@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.auth.dependencies import DbSession, OptionalUser
+from app.auth.dependencies import OptionalUser
 from app.chat.orchestrator import ChatResponse, handle_query
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -30,7 +30,7 @@ class ChatResponseModel(BaseModel):
 
 
 @router.post("/query", response_model=ChatResponseModel)
-def chat_query(payload: ChatRequest, db: DbSession, user: OptionalUser) -> ChatResponse:
+def chat_query(payload: ChatRequest, user: OptionalUser) -> ChatResponse:
     """Answer a question. Auth optional for public questions; required for
     private/hybrid. Refusals are deterministic and audited."""
-    return handle_query(db, payload.query, user)
+    return handle_query(payload.query, user)

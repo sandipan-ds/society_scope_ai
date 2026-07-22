@@ -1,3 +1,29 @@
 .env
-data/
-docs/
+
+# Runtime/generated data that should not be committed.
+data/uploads/
+data/chroma/
+
+# Source-of-truth data and evaluation sets that should be committed.
+!data/members_data/
+!data/members_data/*
+!data/app_state/
+!data/app_state/*
+!data/eval_queries/
+!data/eval_queries/*
+!data/sample_docs/
+!data/sample_docs/*
+
+# Byte-compiled / cache.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Editor / OS files.
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

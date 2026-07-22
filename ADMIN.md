@@ -23,7 +23,6 @@ Admin accounts represent the society committee (chairperson, secretary). They ma
 
 ```powershell
 # From the repo root
-python scripts/build_database.py --reset    # only if DB isn't built yet
 python -m pip install -r backend/requirements.txt
 
 Set-Location backend
@@ -36,6 +35,8 @@ Verify it's up:
 Invoke-RestMethod http://localhost:8000/health
 # => @{ status=ok; app=Society Scope AI; ... }
 ```
+
+The resident data source is the Excel workbook at `data/members_data/Housing_Society_Charges_and_Fines_Template_108_Residents.xlsx`; admin and app metadata lives in `data/app_state/*.json`.
 
 ---
 
@@ -117,7 +118,7 @@ All examples assume `$headers` from Step 1.
 Invoke-RestMethod -Uri "http://localhost:8000/admin/documents" -Headers $headers
 ```
 
-Returns every document's metadata (12 seeded rows: handbook, policies, notices, AGM minutes), newest first.
+Returns every document's metadata (seeded sample docs + anything uploaded), newest first.
 
 ### 3.2 Upload a document
 
@@ -142,10 +143,10 @@ Response (`201 Created`):
 
 ```json
 {
-  "id": 13,
+  "id": 34,
   "title": "Water Supply Notice - Tuesday",
   "document_type": "notice",
-  "file_name": "13.txt",
+  "file_name": "34.txt",
   "issue_date": "2026-07-19",
   "uploaded_by": 1
 }
@@ -153,10 +154,10 @@ Response (`201 Created`):
 
 What happens behind the scenes:
 
-1. File saved to `data/uploads/13.txt` (named by document id)
-2. Row added to the `documents` table
-3. A `pending` ingestion job created automatically
-4. An `upload_document` entry written to `audit_logs` with your user id
+1. File saved to `data/uploads/34.txt` (named by document id)
+2. Entry added to `data/app_state/documents.json`
+3. A `pending` ingestion job created automatically in `data/app_state/ingestion_jobs.json`
+4. An `upload_document` entry written to `data/app_state/audit_logs.json` with your user id
 
 ### 3.3 Check ingestion job status
 
@@ -167,13 +168,13 @@ Invoke-RestMethod -Uri "http://localhost:8000/admin/ingestion-jobs" -Headers $he
 ```json
 [
   {
-    "id": 1,
-    "document_id": 13,
+    "id": 62,
+    "document_id": 34,
     "status": "pending",
     "error_message": null,
     "started_at": null,
     "finished_at": null,
-    "created_at": "2026-07-19T10:30:00"
+    "created_at": "2026-07-22T14:30:00"
   }
 ]
 ```
@@ -205,7 +206,6 @@ Events you'll see:
 | action | meaning |
 |---|---|
 | `login_success` / `login_failure` | authentication attempts |
-| `register` | new resident self-registration |
 | `me_view` | someone called `/auth/me` |
 | `query_private` | a resident viewed their dues/payments/fines/profile, or asked a private/hybrid chat question |
 | `query_public` | a public chat question was answered from documents |
@@ -217,12 +217,12 @@ Events you'll see:
 ### 3.5 Delete a document
 
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8000/admin/documents/13" `
+Invoke-RestMethod -Uri "http://localhost:8000/admin/documents/34" `
   -Method Delete -Headers $headers
 # => 204 No Content
 ```
 
-Removes the DB row **and** the stored file from `data/uploads/`. Logged as `delete_document`.
+Removes the metadata entry, the associated ingestion jobs, **and** the stored file from `data/uploads/`. Logged as `delete_document`.
 
 ---
 
@@ -281,5 +281,5 @@ Invoke-RestMethod -Uri "http://localhost:8000/admin/audit-logs?limit=5" -Headers
 
 - The JWT secret lives in `backend/.env` (`JWT_SECRET_KEY`). Change it before any real deployment.
 - Tokens are bearer tokens — anyone holding one can act as you until it expires. Don't paste them into chats, tickets, or screenshots.
-- Every sensitive action you take (uploads, deletions, logins) is recorded in `audit_logs` with your user id.
+- Every sensitive action you take (uploads, deletions, logins) is recorded in `data/app_state/audit_logs.json` with your user id.
 - The demo HTML page (`demo-login.html`) discards your token when you click **Sign out**; the API itself has no logout — tokens simply expire.

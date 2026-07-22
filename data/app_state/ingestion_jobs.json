@@ -1,0 +1,542 @@
+[
+  {
+    "id": 1,
+    "document_id": 1,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:25.063680",
+    "finished_at": "2026-07-18 21:33:52.880657",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 2,
+    "document_id": 2,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:52.896262",
+    "finished_at": "2026-07-18 21:33:53.183023",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 3,
+    "document_id": 3,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:53.193967",
+    "finished_at": "2026-07-18 21:33:53.560614",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 4,
+    "document_id": 4,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:53.574231",
+    "finished_at": "2026-07-18 21:33:53.899682",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 5,
+    "document_id": 5,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:53.913844",
+    "finished_at": "2026-07-18 21:33:54.208843",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 6,
+    "document_id": 6,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:54.221821",
+    "finished_at": "2026-07-18 21:33:54.605071",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 7,
+    "document_id": 7,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:54.622054",
+    "finished_at": "2026-07-18 21:33:54.950361",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 8,
+    "document_id": 8,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:54.968777",
+    "finished_at": "2026-07-18 21:33:55.359569",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 9,
+    "document_id": 9,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:55.376361",
+    "finished_at": "2026-07-18 21:33:55.800451",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 10,
+    "document_id": 10,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:55.831064",
+    "finished_at": "2026-07-18 21:33:56.283199",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 11,
+    "document_id": 11,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:56.308534",
+    "finished_at": "2026-07-18 21:33:56.729960",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 12,
+    "document_id": 12,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:33:56.750375",
+    "finished_at": "2026-07-18 21:33:57.256682",
+    "created_at": "2026-07-18 21:33:25"
+  },
+  {
+    "id": 13,
+    "document_id": 13,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:34:59.009834",
+    "finished_at": "2026-07-18 21:34:59.655571",
+    "created_at": "2026-07-18 21:34:54"
+  },
+  {
+    "id": 14,
+    "document_id": 14,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:34:59.676697",
+    "finished_at": "2026-07-18 21:34:59.989900",
+    "created_at": "2026-07-18 21:34:54"
+  },
+  {
+    "id": 15,
+    "document_id": 15,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:35:00.002353",
+    "finished_at": "2026-07-18 21:35:00.295351",
+    "created_at": "2026-07-18 21:34:54"
+  },
+  {
+    "id": 16,
+    "document_id": 16,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-18 21:35:00.375845",
+    "finished_at": "2026-07-18 21:35:00.772690",
+    "created_at": "2026-07-18 21:35:00"
+  },
+  {
+    "id": 17,
+    "document_id": 17,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:15:18.910035",
+    "finished_at": "2026-07-19 09:15:19.202759",
+    "created_at": "2026-07-19 09:15:09"
+  },
+  {
+    "id": 18,
+    "document_id": 18,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:15:19.213042",
+    "finished_at": "2026-07-19 09:15:19.487927",
+    "created_at": "2026-07-19 09:15:09"
+  },
+  {
+    "id": 19,
+    "document_id": 19,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:15:19.500020",
+    "finished_at": "2026-07-19 09:15:19.777573",
+    "created_at": "2026-07-19 09:15:09"
+  },
+  {
+    "id": 20,
+    "document_id": 20,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:15:19.835308",
+    "finished_at": "2026-07-19 09:15:20.098095",
+    "created_at": "2026-07-19 09:15:19"
+  },
+  {
+    "id": 21,
+    "document_id": 21,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:25:44.255904",
+    "finished_at": "2026-07-19 09:25:44.525745",
+    "created_at": "2026-07-19 09:25:38"
+  },
+  {
+    "id": 22,
+    "document_id": 22,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:25:44.537191",
+    "finished_at": "2026-07-19 09:25:44.801422",
+    "created_at": "2026-07-19 09:25:39"
+  },
+  {
+    "id": 23,
+    "document_id": 23,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:25:44.809509",
+    "finished_at": "2026-07-19 09:25:45.062735",
+    "created_at": "2026-07-19 09:25:39"
+  },
+  {
+    "id": 24,
+    "document_id": 24,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:25:45.130616",
+    "finished_at": "2026-07-19 09:25:45.393410",
+    "created_at": "2026-07-19 09:25:45"
+  },
+  {
+    "id": 25,
+    "document_id": 25,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:46:00.103286",
+    "finished_at": "2026-07-19 09:46:00.347636",
+    "created_at": "2026-07-19 09:45:54"
+  },
+  {
+    "id": 26,
+    "document_id": 26,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:46:00.358636",
+    "finished_at": "2026-07-19 09:46:00.590836",
+    "created_at": "2026-07-19 09:45:54"
+  },
+  {
+    "id": 27,
+    "document_id": 27,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:46:00.600617",
+    "finished_at": "2026-07-19 09:46:00.847230",
+    "created_at": "2026-07-19 09:45:54"
+  },
+  {
+    "id": 28,
+    "document_id": 28,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 09:46:00.909078",
+    "finished_at": "2026-07-19 09:46:01.138460",
+    "created_at": "2026-07-19 09:46:00"
+  },
+  {
+    "id": 29,
+    "document_id": 1,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:48.282835",
+    "finished_at": "2026-07-19 11:10:50.403580",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 30,
+    "document_id": 2,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:50.414479",
+    "finished_at": "2026-07-19 11:10:50.851489",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 31,
+    "document_id": 3,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:50.860888",
+    "finished_at": "2026-07-19 11:10:51.281845",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 32,
+    "document_id": 4,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:51.294681",
+    "finished_at": "2026-07-19 11:10:51.816958",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 33,
+    "document_id": 5,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:51.829470",
+    "finished_at": "2026-07-19 11:10:52.309201",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 34,
+    "document_id": 6,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:52.319493",
+    "finished_at": "2026-07-19 11:10:52.759075",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 35,
+    "document_id": 7,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:52.770791",
+    "finished_at": "2026-07-19 11:10:53.190343",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 36,
+    "document_id": 8,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:53.204519",
+    "finished_at": "2026-07-19 11:10:53.677713",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 37,
+    "document_id": 9,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:53.689026",
+    "finished_at": "2026-07-19 11:10:54.150251",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 38,
+    "document_id": 10,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:54.161258",
+    "finished_at": "2026-07-19 11:10:54.626625",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 39,
+    "document_id": 11,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:54.638356",
+    "finished_at": "2026-07-19 11:10:55.085949",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 40,
+    "document_id": 12,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:10:55.098092",
+    "finished_at": "2026-07-19 11:10:55.546473",
+    "created_at": "2026-07-19 11:10:48"
+  },
+  {
+    "id": 41,
+    "document_id": 29,
+    "status": "failed",
+    "error_message": "Document 29 not found",
+    "started_at": "2026-07-19 11:14:30.629968",
+    "finished_at": "2026-07-19 11:14:30.636236",
+    "created_at": "2026-07-19 11:14:24"
+  },
+  {
+    "id": 42,
+    "document_id": 30,
+    "status": "failed",
+    "error_message": "Document 30 not found",
+    "started_at": "2026-07-19 11:14:30.647801",
+    "finished_at": "2026-07-19 11:14:30.654572",
+    "created_at": "2026-07-19 11:14:26"
+  },
+  {
+    "id": 43,
+    "document_id": 31,
+    "status": "failed",
+    "error_message": "Document 31 not found",
+    "started_at": "2026-07-19 11:14:30.667320",
+    "finished_at": "2026-07-19 11:14:30.675387",
+    "created_at": "2026-07-19 11:14:26"
+  },
+  {
+    "id": 44,
+    "document_id": 32,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 11:14:30.750360",
+    "finished_at": "2026-07-19 11:14:31.053701",
+    "created_at": "2026-07-19 11:14:30"
+  },
+  {
+    "id": 45,
+    "document_id": 33,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-19 13:06:49.824624",
+    "finished_at": "2026-07-19 13:07:16.945963",
+    "created_at": "2026-07-19 13:06:49"
+  },
+  {
+    "id": 47,
+    "document_id": 35,
+    "status": "failed",
+    "error_message": "Document 35 not found",
+    "started_at": "2026-07-20 05:21:40.309657",
+    "finished_at": "2026-07-20 05:21:40.315272",
+    "created_at": "2026-07-20 05:21:35"
+  },
+  {
+    "id": 48,
+    "document_id": 36,
+    "status": "failed",
+    "error_message": "Document 36 not found",
+    "started_at": "2026-07-20 05:21:40.326197",
+    "finished_at": "2026-07-20 05:21:40.331265",
+    "created_at": "2026-07-20 05:21:35"
+  },
+  {
+    "id": 49,
+    "document_id": 37,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-20 05:21:40.393615",
+    "finished_at": "2026-07-20 05:21:40.714466",
+    "created_at": "2026-07-20 05:21:40"
+  },
+  {
+    "id": 50,
+    "document_id": 38,
+    "status": "failed",
+    "error_message": "Document 38 not found",
+    "started_at": "2026-07-20 13:28:04.797870",
+    "finished_at": "2026-07-20 13:28:04.804722",
+    "created_at": "2026-07-20 13:27:56"
+  },
+  {
+    "id": 51,
+    "document_id": 39,
+    "status": "failed",
+    "error_message": "Document 39 not found",
+    "started_at": "2026-07-20 13:28:04.814769",
+    "finished_at": "2026-07-20 13:28:04.820229",
+    "created_at": "2026-07-20 13:27:59"
+  },
+  {
+    "id": 52,
+    "document_id": 40,
+    "status": "failed",
+    "error_message": "Document 40 not found",
+    "started_at": "2026-07-20 13:28:04.831427",
+    "finished_at": "2026-07-20 13:28:04.838604",
+    "created_at": "2026-07-20 13:27:59"
+  },
+  {
+    "id": 53,
+    "document_id": 41,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-20 13:28:04.971919",
+    "finished_at": "2026-07-20 13:28:05.450754",
+    "created_at": "2026-07-20 13:28:04"
+  },
+  {
+    "id": 54,
+    "document_id": 42,
+    "status": "failed",
+    "error_message": "Document 42 not found",
+    "started_at": "2026-07-20 13:30:12.785480",
+    "finished_at": "2026-07-20 13:30:12.793687",
+    "created_at": "2026-07-20 13:30:06"
+  },
+  {
+    "id": 55,
+    "document_id": 43,
+    "status": "failed",
+    "error_message": "Document 43 not found",
+    "started_at": "2026-07-20 13:30:12.806389",
+    "finished_at": "2026-07-20 13:30:12.814672",
+    "created_at": "2026-07-20 13:30:07"
+  },
+  {
+    "id": 56,
+    "document_id": 44,
+    "status": "failed",
+    "error_message": "Document 44 not found",
+    "started_at": "2026-07-20 13:30:12.829903",
+    "finished_at": "2026-07-20 13:30:12.836062",
+    "created_at": "2026-07-20 13:30:07"
+  },
+  {
+    "id": 57,
+    "document_id": 45,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-20 13:30:12.906678",
+    "finished_at": "2026-07-20 13:30:13.227129",
+    "created_at": "2026-07-20 13:30:12"
+  },
+  {
+    "id": 58,
+    "document_id": 46,
+    "status": "failed",
+    "error_message": "Document 46 not found",
+    "started_at": "2026-07-20 13:53:09.160435",
+    "finished_at": "2026-07-20 13:53:09.166926",
+    "created_at": "2026-07-20 13:53:02"
+  },
+  {
+    "id": 59,
+    "document_id": 47,
+    "status": "failed",
+    "error_message": "Document 47 not found",
+    "started_at": "2026-07-20 13:53:09.180582",
+    "finished_at": "2026-07-20 13:53:09.187394",
+    "created_at": "2026-07-20 13:53:04"
+  },
+  {
+    "id": 60,
+    "document_id": 48,
+    "status": "failed",
+    "error_message": "Document 48 not found",
+    "started_at": "2026-07-20 13:53:09.200882",
+    "finished_at": "2026-07-20 13:53:09.209272",
+    "created_at": "2026-07-20 13:53:04"
+  },
+  {
+    "id": 61,
+    "document_id": 49,
+    "status": "completed",
+    "error_message": null,
+    "started_at": "2026-07-20 13:53:09.283366",
+    "finished_at": "2026-07-20 13:53:09.613754",
+    "created_at": "2026-07-20 13:53:09"
+  }
+]

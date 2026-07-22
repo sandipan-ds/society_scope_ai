@@ -1,47 +1,25 @@
 """Service layer for resident self-service endpoints.
 
-Scoping rule: every query here takes an explicit `resident_id` derived from
-the authenticated user — never from the request. This is the RBAC enforcement
-point for private data (per docs/05_API_RBAC_SPEC.md).
+Scoping rule: every query takes the authenticated user's flat number from
+their token — never from the request. This is the RBAC enforcement point for
+private data.
 """
 from __future__ import annotations
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from app.db.models import Fine, MonthlyCharge, Resident
+from app.workbook import Fine, MonthlyCharge, Resident, get_dues, get_fines, get_payments, get_resident_by_flat
 
 
-def get_profile(db: Session, resident_id: int) -> Resident | None:
-    return db.scalar(select(Resident).where(Resident.id == resident_id))
+def get_profile(flat_no: str) -> Resident | None:
+    return get_resident_by_flat(flat_no)
 
 
-def get_dues(db: Session, resident_id: int) -> list[MonthlyCharge]:
-    """Unpaid or partially-paid charges, oldest first."""
-    stmt = (
-        select(MonthlyCharge)
-        .where(MonthlyCharge.resident_id == resident_id)
-        .where(MonthlyCharge.status.in_(["unpaid", "partial"]))
-        .order_by(MonthlyCharge.charge_year, MonthlyCharge.id)
-    )
-    return list(db.scalars(stmt))
+def get_dues_for(flat_no: str) -> list[MonthlyCharge]:
+    return get_dues(flat_no)
 
 
-def get_payments(db: Session, resident_id: int) -> list[MonthlyCharge]:
-    """Fully paid charges, most recent first (payment history)."""
-    stmt = (
-        select(MonthlyCharge)
-        .where(MonthlyCharge.resident_id == resident_id)
-        .where(MonthlyCharge.status == "paid")
-        .order_by(MonthlyCharge.paid_date.desc())
-    )
-    return list(db.scalars(stmt))
+def get_payments_for(flat_no: str) -> list[MonthlyCharge]:
+    return get_payments(flat_no)
 
 
-def get_fines(db: Session, resident_id: int) -> list[Fine]:
-    stmt = (
-        select(Fine)
-        .where(Fine.resident_id == resident_id)
-        .order_by(Fine.fine_date.desc())
-    )
-    return list(db.scalars(stmt))
+def get_fines_for(flat_no: str) -> list[Fine]:
+    return get_fines(flat_no)

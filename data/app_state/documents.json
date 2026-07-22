@@ -1,0 +1,119 @@
+[
+  {
+    "id": 1,
+    "title": "Society Handbook 2026",
+    "document_type": "policy",
+    "file_name": "society_handbook_2026.md",
+    "issue_date": "2026-01-05",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.174191+00:00"
+  },
+  {
+    "id": 2,
+    "title": "Visitor Policy",
+    "document_type": "policy",
+    "file_name": "visitor_policy.md",
+    "issue_date": "2026-01-10",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.176555+00:00"
+  },
+  {
+    "id": 3,
+    "title": "Parking Policy",
+    "document_type": "policy",
+    "file_name": "parking_policy.md",
+    "issue_date": "2026-01-12",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.178784+00:00"
+  },
+  {
+    "id": 4,
+    "title": "Pet Policy",
+    "document_type": "policy",
+    "file_name": "pet_policy.md",
+    "issue_date": "2026-02-01",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.181759+00:00"
+  },
+  {
+    "id": 5,
+    "title": "Waste Segregation Policy",
+    "document_type": "policy",
+    "file_name": "waste_segregation_policy.md",
+    "issue_date": "2026-03-15",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.184220+00:00"
+  },
+  {
+    "id": 6,
+    "title": "Water Outage Notice",
+    "document_type": "notice",
+    "file_name": "water_outage_notice.md",
+    "issue_date": "2026-05-10",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.186616+00:00"
+  },
+  {
+    "id": 7,
+    "title": "Lift Maintenance Notice",
+    "document_type": "notice",
+    "file_name": "lift_maintenance_notice.md",
+    "issue_date": "2026-06-04",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.189335+00:00"
+  },
+  {
+    "id": 8,
+    "title": "Festival Event Circular",
+    "document_type": "circular",
+    "file_name": "festival_event_circular.md",
+    "issue_date": "2026-07-20",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.192343+00:00"
+  },
+  {
+    "id": 9,
+    "title": "Vendor Contact Notice",
+    "document_type": "notice",
+    "file_name": "vendor_contact_notice.md",
+    "issue_date": "2026-07-28",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.194690+00:00"
+  },
+  {
+    "id": 10,
+    "title": "Maintenance Due Reminder - July",
+    "document_type": "notice",
+    "file_name": "maintenance_due_reminder_july.md",
+    "issue_date": "2026-07-30",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.197398+00:00"
+  },
+  {
+    "id": 11,
+    "title": "AGM Minutes - January 2026",
+    "document_type": "agm_minutes",
+    "file_name": "agm_minutes_jan_2026.md",
+    "issue_date": "2026-01-28",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.200720+00:00"
+  },
+  {
+    "id": 12,
+    "title": "AGM Minutes - April 2026",
+    "document_type": "agm_minutes",
+    "file_name": "agm_minutes_apr_2026.md",
+    "issue_date": "2026-04-30",
+    "uploaded_by": 1,
+    "created_at": "2026-07-22T14:06:23.203949+00:00"
+  },
+  {
+    "id": 33,
+    "title": "Maharashtra Co-operative Societies Act, 1960",
+    "document_type": "policy",
+    "file_name": "33.pdf",
+    "issue_date": "2025-06-06",
+    "uploaded_by": null,
+    "created_at": "2026-07-22T14:06:23.206806+00:00"
+  }
+]
